@@ -1,0 +1,112 @@
+#root {
+  min-height: 100vh;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-width: 320px;
+  overflow-x: hidden;
+  background: #07090c;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+* {
+  letter-spacing: 0 !important;
+}
+
+::selection {
+  background: rgba(190, 255, 71, 0.28);
+  color: #ffffff;
+}
+
+.signal-grid {
+  background:
+    linear-gradient(rgba(190, 255, 71, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(85, 214, 255, 0.028) 1px, transparent 1px),
+    radial-gradient(circle at 15% 10%, rgba(190, 255, 71, 0.08), transparent 30%),
+    linear-gradient(135deg, #07090c 0%, #0e1217 45%, #07090c 100%);
+  background-size:
+    52px 52px,
+    52px 52px,
+    100% 100%,
+    100% 100%;
+}
+
+.panel-enter {
+  animation: panel-enter 420ms ease-out both;
+}
+
+.topic-card,
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.topic-card {
+  transform: translateZ(0);
+}
+
+.topic-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 620px;
+}
+
+@supports selector(::-webkit-scrollbar) {
+  ::-webkit-scrollbar {
+    height: 10px;
+    width: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #07090c;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(190, 255, 71, 0.26);
+    border: 2px solid #07090c;
+    border-radius: 999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(85, 214, 255, 0.34);
+  }
+}
+
+@keyframes panel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .panel-enter {
+    animation: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .signal-grid {
+    background-size:
+      38px 38px,
+      38px 38px,
+      100% 100%,
+      100% 100%;
+  }
+}
