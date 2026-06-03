@@ -45,9 +45,18 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { topicStudyNotes } from './data/topicStudyNotes'
+import {
+  managerRoundDomains,
+  managerRoundFlows,
+  managerRoundQuestionGroups,
+  managerRoundScenarios,
+  managerRoundSources,
+  managerRoundStudyPlan,
+  managerRoundThreatWatch,
+} from './data/managerRound'
 import './App.css'
 
-type SectionId = 'dashboard' | 'resume' | 'questions' | 'topics' | 'playbooks' | 'zoho' | 'cheatsheet'
+type SectionId = 'dashboard' | 'manager' | 'resume' | 'questions' | 'topics' | 'playbooks' | 'zoho' | 'cheatsheet'
 
 type TopicCategory =
   | 'Core'
@@ -93,6 +102,7 @@ type Playbook = {
 
 const navItems: { id: SectionId; label: string; icon: LucideIcon; helper: string }[] = [
   { id: 'dashboard', label: 'Mission brief', icon: Radar, helper: 'What to study first' },
+  { id: 'manager', label: 'Manager round', icon: Brain, helper: 'Deep technical prep' },
   { id: 'resume', label: 'Resume story', icon: UserRound, helper: 'Your profile and proof' },
   { id: 'questions', label: 'Question bank', icon: NotebookTabs, helper: 'Practice answers' },
   { id: 'topics', label: '24 topic map', icon: Layers3, helper: 'Gemini PDF coverage' },
@@ -1263,6 +1273,7 @@ function App() {
                 onOpenTopics={() => setActiveSection('topics')}
               />
             )}
+            {activeSection === 'manager' && <ManagerRoundSection />}
             {activeSection === 'resume' && <ResumeSection />}
             {activeSection === 'questions' && <QuestionsSection />}
             {activeSection === 'topics' && (
@@ -1330,7 +1341,7 @@ function NavButton({
 
 function MobileNav({ activeSection, onSelect }: { activeSection: SectionId; onSelect: (section: SectionId) => void }) {
   return (
-    <nav className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-7 gap-1 rounded-lg border border-white/10 bg-[#090d12]/95 p-2 shadow-[0_20px_80px_rgba(0,0,0,0.55)] backdrop-blur-xl xl:hidden" aria-label="Mobile sections">
+    <nav className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-8 gap-1 rounded-lg border border-white/10 bg-[#090d12]/95 p-2 shadow-[0_20px_80px_rgba(0,0,0,0.55)] backdrop-blur-xl xl:hidden" aria-label="Mobile sections">
       {navItems.map((item) => {
         const Icon = item.icon
         const active = item.id === activeSection
@@ -1346,7 +1357,7 @@ function MobileNav({ activeSection, onSelect }: { activeSection: SectionId; onSe
             aria-label={item.label}
           >
             <Icon className="h-5 w-5" />
-            <span className="mt-1 hidden sm:block">{item.label.split(' ')[0]}</span>
+            <span className="mt-1 hidden md:block">{item.label.split(' ')[0]}</span>
           </button>
         )
       })}
@@ -1834,6 +1845,920 @@ function PlaybooksSection() {
         ))}
       </div>
     </section>
+  )
+}
+
+function ManagerRoundSection() {
+  type MgrTab = 'overview' | 'foundations' | 'diagrams' | 'flows' | 'scenarios' | 'questions' | 'studyplan'
+
+  const [activeTab, setActiveTab] = useState<MgrTab>('overview')
+  const [expandedDomain, setExpandedDomain] = useState<number | null>(null)
+  const [expandedScenario, setExpandedScenario] = useState<number | null>(null)
+
+  const mgrStorageKey = 'zoho-soc-mgr-mastered-domains'
+  const [masteredDomains, setMasteredDomains] = useState<string[]>(() => {
+    if (typeof window === 'undefined') return []
+    try {
+      const saved = window.localStorage.getItem(mgrStorageKey)
+      return saved ? JSON.parse(saved) as string[] : []
+    } catch {
+      return []
+    }
+  })
+
+  useEffect(() => {
+    window.localStorage.setItem(mgrStorageKey, JSON.stringify(masteredDomains))
+  }, [masteredDomains])
+
+  function toggleDomainMastered(title: string) {
+    setMasteredDomains((current) =>
+      current.includes(title) ? current.filter((d) => d !== title) : [...current, title],
+    )
+  }
+
+  const totalDomains = managerRoundDomains.length
+  const masteredDomainCount = masteredDomains.length
+  const domainProgressPercent = totalDomains > 0 ? Math.round((masteredDomainCount / totalDomains) * 100) : 0
+  const totalQuestions = managerRoundQuestionGroups.reduce((sum, g) => sum + g.questions.length, 0)
+  const totalScenarios = managerRoundScenarios.length
+  const totalFlows = managerRoundFlows.length
+
+  const tabs: { id: MgrTab; label: string; icon: LucideIcon }[] = [
+    { id: 'overview', label: 'Command Deck', icon: Radar },
+    { id: 'foundations', label: 'Foundations', icon: Brain },
+    { id: 'diagrams', label: 'Diagrams', icon: Network },
+    { id: 'flows', label: 'Flows', icon: Route },
+    { id: 'scenarios', label: 'Scenarios', icon: Siren },
+    { id: 'questions', label: 'Questions', icon: NotebookTabs },
+    { id: 'studyplan', label: 'Study Plan', icon: ListChecks },
+  ]
+
+  return (
+    <section className="panel-enter mx-auto w-full max-w-7xl space-y-6">
+      {/* ── Hero ── */}
+      <div className="relative overflow-hidden rounded-lg border border-lime-300/20 bg-[#0d1117] p-6 lg:p-10">
+        <div className="mgr-hero-gradient" />
+        <div className="relative z-10">
+          <p className="font-mono text-xs uppercase tracking-[0.3em] text-lime-200">Manager round · deep technical prep</p>
+          <h2 className="mt-3 max-w-4xl text-3xl font-semibold tracking-tight text-white md:text-5xl lg:text-6xl">
+            Master every topic the manager will drill.
+          </h2>
+          <p className="mt-5 max-w-3xl text-base leading-7 text-zinc-300">
+            Built from your JD, employee hints, your scripting round experience, official references (NIST, OWASP, MITRE, RFCs), and 2026 threat intelligence. Covers TCP/UDP, data centers, IP addressing, OWASP Top 10, WAF vs firewall, SOC triage, scripting, Active Directory, cloud security, encryption, and more.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-2">
+            {['TCP/UDP', 'Data Center', 'Public/Private IP', 'OWASP 2025+2021', 'WAF vs Firewall', 'IDS/IPS', 'SOC Triage', 'SIEM', 'Logs', 'Scripting', 'DNS', 'TLS/SSL', 'VPN/Zero Trust', 'MITRE ATT&CK', 'Active Directory', 'Cloud Security', 'Encryption'].map((item) => (
+              <Pill key={item}>{item}</Pill>
+            ))}
+          </div>
+
+          {/* Stats */}
+          <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:gap-4">
+            <div className="mgr-stat">
+              <span className="mgr-stat-value">{totalDomains}</span>
+              <span className="mgr-stat-label">Domains</span>
+            </div>
+            <div className="mgr-stat">
+              <span className="mgr-stat-value">{totalQuestions}</span>
+              <span className="mgr-stat-label">Questions</span>
+            </div>
+            <div className="mgr-stat">
+              <span className="mgr-stat-value">{totalScenarios}</span>
+              <span className="mgr-stat-label">Scenarios</span>
+            </div>
+            <div className="mgr-stat">
+              <span className="mgr-stat-value">{totalFlows}</span>
+              <span className="mgr-stat-label">Arch Flows</span>
+            </div>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="mt-6 rounded-lg border border-white/10 bg-black/30 p-4">
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-xs uppercase tracking-[0.22em] text-zinc-500">Domain mastery</span>
+              <span className="font-mono text-sm text-lime-200">{masteredDomainCount}/{totalDomains} · {domainProgressPercent}%</span>
+            </div>
+            <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-white/10">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-lime-300 to-cyan-200 transition-all duration-700"
+                style={{ width: `${domainProgressPercent}%` }}
+              />
+            </div>
+            <p className="mt-2 text-xs text-zinc-500">Mark domains as mastered in the Foundations tab. Progress is saved in this browser.</p>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Tab Navigation ── */}
+      <nav className="mgr-tabs" aria-label="Manager round sections">
+        {tabs.map((tab) => {
+          const TabIcon = tab.icon
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={`mgr-tab ${activeTab === tab.id ? 'mgr-tab--active' : ''}`}
+            >
+              <TabIcon className="h-4 w-4" />
+              {tab.label}
+            </button>
+          )
+        })}
+      </nav>
+
+      {/* ── Tab Content ── */}
+
+      {/* OVERVIEW */}
+      {activeTab === 'overview' && (
+        <div className="space-y-6 mgr-stagger">
+          {/* Quick access grid */}
+          <div className="grid gap-4 md:grid-cols-3">
+            <button
+              type="button"
+              onClick={() => setActiveTab('foundations')}
+              className="mgr-glow-card rounded-lg bg-[#0d1117] p-5 text-left"
+            >
+              <Brain className="h-8 w-8 text-lime-200" />
+              <h3 className="mt-3 text-lg font-semibold text-white">{totalDomains} Foundation Domains</h3>
+              <p className="mt-2 text-sm leading-6 text-zinc-400">
+                TCP/UDP, DNS, OWASP, WAF, firewalls, MITRE ATT&CK, Active Directory, cloud security, encryption, and more. Each domain has must-explain points, memorize lists, likely questions, and answer formulas.
+              </p>
+              <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-lime-200">
+                Explore domains <ChevronRight className="h-3 w-3" />
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('diagrams')}
+              className="mgr-glow-card rounded-lg bg-[#0d1117] p-5 text-left"
+            >
+              <Network className="h-8 w-8 text-cyan-200" />
+              <h3 className="mt-3 text-lg font-semibold text-white">6 Architecture Diagrams</h3>
+              <p className="mt-2 text-sm leading-6 text-zinc-400">
+                Interactive SVG visualizations of data center topology, TCP handshake, OSI/TCP-IP models, NIST IR lifecycle, MITRE ATT&CK kill chain, and phishing investigation flow.
+              </p>
+              <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-cyan-200">
+                View diagrams <ChevronRight className="h-3 w-3" />
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('scenarios')}
+              className="mgr-glow-card rounded-lg bg-[#0d1117] p-5 text-left"
+            >
+              <Siren className="h-8 w-8 text-rose-300" />
+              <h3 className="mt-3 text-lg font-semibold text-white">{totalScenarios} Live Scenarios</h3>
+              <p className="mt-2 text-sm leading-6 text-zinc-400">
+                Real-world SOC scenarios: database login at 3 AM, SQLi attempts, lateral movement, DNS tunneling, insider threats, impossible travel, supply chain attacks, and more.
+              </p>
+              <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-rose-300">
+                Practice scenarios <ChevronRight className="h-3 w-3" />
+              </span>
+            </button>
+          </div>
+
+          {/* Study order */}
+          <div className="grid gap-5 lg:grid-cols-[1fr_0.9fr]">
+            <SectionPanel title="Study order for manager round" icon={Route}>
+              <div className="space-y-4">
+                {managerRoundStudyPlan.map((block, index) => (
+                  <div key={block.title} className="rounded-lg border border-white/10 bg-black/20 p-4">
+                    <p className="font-mono text-xs uppercase tracking-[0.18em] text-lime-200">Priority {index + 1}</p>
+                    <h3 className="mt-1 text-sm font-semibold text-white">{block.title}</h3>
+                    <div className="mt-3">
+                      <StudyList items={block.items} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </SectionPanel>
+
+            <div className="space-y-5">
+              <SectionPanel title="2026 threat watch" icon={Siren}>
+                <StudyList items={managerRoundThreatWatch} />
+              </SectionPanel>
+
+              <SectionPanel title="Research sources used" icon={FileText}>
+                <div className="grid gap-2">
+                  {managerRoundSources.slice(0, 6).map((source) => (
+                    <a
+                      key={source.url}
+                      href={source.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-lg border border-white/10 bg-white/[0.03] p-3 transition hover:border-lime-300/40 hover:bg-lime-300/10"
+                    >
+                      <h3 className="text-xs font-semibold text-white">{source.title}</h3>
+                      <p className="mt-1 text-xs leading-5 text-zinc-400">{source.whyItMatters}</p>
+                    </a>
+                  ))}
+                </div>
+              </SectionPanel>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* FOUNDATIONS */}
+      {activeTab === 'foundations' && (
+        <div className="space-y-4 mgr-stagger">
+          <div className="rounded-lg border border-white/10 bg-[#0d1117] p-5">
+            <p className="font-mono text-xs uppercase tracking-[0.24em] text-lime-200">
+              {totalDomains} domains · {masteredDomainCount} mastered · {domainProgressPercent}% complete
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold text-white">Foundation domains the manager may drill</h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">
+              Click any domain to expand its full breakdown. Mark as mastered when you can explain every point from memory.
+            </p>
+          </div>
+
+          {managerRoundDomains.map((domain, index) => {
+            const isExpanded = expandedDomain === index
+            const isMastered = masteredDomains.includes(domain.title)
+            return (
+              <article
+                key={domain.title}
+                className={`mgr-glow-card rounded-lg bg-[#0d1117] transition ${isMastered ? 'border-lime-300/40' : ''}`}
+              >
+                <button
+                  type="button"
+                  onClick={() => setExpandedDomain(isExpanded ? null : index)}
+                  className="flex w-full items-start gap-4 p-5 text-left"
+                >
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-lime-300/30 bg-lime-300/10 font-mono text-sm font-bold text-lime-200">
+                    {index + 1}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-lg font-semibold text-white">{domain.title}</h3>
+                      {isMastered && <CheckCircle2 className="h-5 w-5 text-lime-300" />}
+                    </div>
+                    <p className="mt-1 text-sm leading-6 text-zinc-400">{domain.managerAngle}</p>
+                  </div>
+                  <ChevronRight className={`mt-1 h-5 w-5 shrink-0 text-zinc-500 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`} />
+                </button>
+
+                <div className={`mgr-domain-content ${isExpanded ? 'mgr-domain-content--open' : ''}`}>
+                  <div>
+                    <div className="border-t border-white/10 p-5">
+                      <div className="grid gap-5 lg:grid-cols-2">
+                        <StudyBlock title="Must explain clearly" tone="lime">
+                          <StudyList items={domain.mustExplain} />
+                        </StudyBlock>
+                        <StudyBlock title="Must memorize cold" tone="cyan">
+                          <StudyList items={domain.mustMemorize} />
+                        </StudyBlock>
+                      </div>
+
+                      <div className="mt-4">
+                        <StudyBlock title="Likely interview questions" tone="white">
+                          <StudyList items={domain.likelyQuestions} />
+                        </StudyBlock>
+                      </div>
+
+                      <div className="mt-4 rounded-lg border border-amber-300/20 bg-amber-300/10 p-4 text-sm leading-6 text-amber-50">
+                        <strong className="text-amber-100">Answer formula:</strong> {domain.answerFormula}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => toggleDomainMastered(domain.title)}
+                        className={`mt-4 inline-flex w-full items-center justify-center gap-2 rounded-md px-4 py-3 text-sm font-semibold transition ${
+                          isMastered
+                            ? 'bg-lime-300 text-black hover:bg-lime-200'
+                            : 'border border-white/10 bg-white/[0.04] text-white hover:border-lime-300/50'
+                        }`}
+                      >
+                        <CheckCircle2 className="h-4 w-4" />
+                        {isMastered ? 'Mastered ✓' : 'Mark as mastered'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            )
+          })}
+        </div>
+      )}
+
+      {/* DIAGRAMS */}
+      {activeTab === 'diagrams' && (
+        <div className="space-y-6 mgr-stagger">
+          <div className="rounded-lg border border-white/10 bg-[#0d1117] p-5">
+            <p className="font-mono text-xs uppercase tracking-[0.24em] text-cyan-200">Interactive architecture diagrams</p>
+            <h2 className="mt-2 text-2xl font-semibold text-white">Visual reference for every concept the manager may ask you to draw</h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">
+              The employee mentioned the manager asks about architectural diagrams and traffic flows. Study these visualizations so you can recreate them on a whiteboard.
+            </p>
+          </div>
+
+          <div className="diagram-gallery">
+            {/* Network Topology */}
+            <div className="diagram-container">
+              <span className="diagram-label">Data Center Architecture</span>
+              <div className="pt-8">
+                <MgrDiagramNetworkTopology />
+              </div>
+              <p className="mt-4 text-xs leading-5 text-zinc-500 relative z-10">
+                Internet → Edge → Firewall → DMZ (WAF/LB) → App Tier → Database → SIEM. North-south = in/out, East-west = internal lateral.
+              </p>
+            </div>
+
+            {/* TCP Handshake */}
+            <div className="diagram-container">
+              <span className="diagram-label">TCP Three-Way Handshake</span>
+              <div className="pt-8">
+                <MgrDiagramTcpHandshake />
+              </div>
+              <p className="mt-4 text-xs leading-5 text-zinc-500 relative z-10">
+                SYN → SYN-ACK → ACK establishes connection. FIN → ACK → FIN → ACK tears it down. Visible in firewall and Wireshark logs.
+              </p>
+            </div>
+
+            {/* OSI Model */}
+            <div className="diagram-container">
+              <span className="diagram-label">OSI vs TCP/IP Model</span>
+              <div className="pt-8">
+                <MgrDiagramOsiModel />
+              </div>
+              <p className="mt-4 text-xs leading-5 text-zinc-500 relative z-10">
+                7-layer OSI maps to 4-layer TCP/IP. Know which protocols live at each layer and how data encapsulation works.
+              </p>
+            </div>
+
+            {/* Incident Lifecycle */}
+            <div className="diagram-container">
+              <span className="diagram-label">NIST IR Lifecycle</span>
+              <div className="pt-8">
+                <MgrDiagramIncidentLifecycle />
+              </div>
+              <p className="mt-4 text-xs leading-5 text-zinc-500 relative z-10">
+                Preparation → Detection/Analysis → Containment → Eradication → Recovery → Lessons Learned. Know this cold.
+              </p>
+            </div>
+
+            {/* Attack Kill Chain */}
+            <div className="diagram-container">
+              <span className="diagram-label">Cyber Kill Chain</span>
+              <div className="pt-8">
+                <MgrDiagramAttackFlow />
+              </div>
+              <p className="mt-4 text-xs leading-5 text-zinc-500 relative z-10">
+                Recon → Weaponize → Deliver → Exploit → Install → C2 → Actions. SOC can detect/disrupt at each stage.
+              </p>
+            </div>
+
+            {/* Phishing Flow */}
+            <div className="diagram-container">
+              <span className="diagram-label">Phishing Investigation Flow</span>
+              <div className="pt-8">
+                <MgrDiagramPhishingFlow />
+              </div>
+              <p className="mt-4 text-xs leading-5 text-zinc-500 relative z-10">
+                Systematic phishing triage: headers → SPF/DKIM/DMARC → URLs → attachments → scope → containment.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* FLOWS */}
+      {activeTab === 'flows' && (
+        <div className="space-y-6 mgr-stagger">
+          <div className="rounded-lg border border-white/10 bg-[#0d1117] p-5">
+            <p className="font-mono text-xs uppercase tracking-[0.24em] text-lime-200">Architecture & traffic flow answers</p>
+            <h2 className="mt-2 text-2xl font-semibold text-white">Walk the manager through each flow step by step</h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">
+              Practice explaining these flows out loud. For each step, name what happens, what security control is involved, and what log evidence it produces.
+            </p>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            {managerRoundFlows.map((flow) => (
+              <article key={flow.title} className="mgr-glow-card rounded-lg bg-[#0d1117] p-5">
+                <p className="font-mono text-xs uppercase tracking-[0.18em] text-cyan-200">{flow.interviewPrompt}</p>
+                <h3 className="mt-2 text-lg font-semibold text-white">{flow.title}</h3>
+                <ol className="mt-4 space-y-3">
+                  {flow.steps.map((step, index) => (
+                    <li key={step} className="flex gap-3 text-sm leading-6 text-zinc-300">
+                      <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md border border-lime-300/30 bg-lime-300/10 font-mono text-xs text-lime-200">
+                        {index + 1}
+                      </span>
+                      <span>{step}</span>
+                    </li>
+                  ))}
+                </ol>
+                <div className="mt-4 rounded-lg border border-lime-300/20 bg-lime-300/10 p-3 text-sm leading-6 text-lime-50">
+                  {flow.talkTrack}
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {flow.evidence.map((item) => (
+                    <Pill key={item}>{item}</Pill>
+                  ))}
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* SCENARIOS */}
+      {activeTab === 'scenarios' && (
+        <div className="space-y-6 mgr-stagger">
+          <div className="rounded-lg border border-white/10 bg-[#0d1117] p-5">
+            <p className="font-mono text-xs uppercase tracking-[0.24em] text-rose-300">Scenario-based interview prep</p>
+            <h2 className="mt-2 text-2xl font-semibold text-white">The manager will give you a situation. Think out loud.</h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">
+              Click each scenario to reveal the full investigation approach. Practice: state what you check first, what signals matter, how you frame your answer, and when you escalate.
+            </p>
+          </div>
+
+          <div className="grid gap-4">
+            {managerRoundScenarios.map((scenario, index) => {
+              const isOpen = expandedScenario === index
+              return (
+                <article key={scenario.title} className="mgr-glow-card rounded-lg bg-[#0d1117]">
+                  <button
+                    type="button"
+                    onClick={() => setExpandedScenario(isOpen ? null : index)}
+                    className="flex w-full items-start gap-4 p-5 text-left"
+                  >
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-rose-300/30 bg-rose-300/10 font-mono text-sm font-bold text-rose-300">
+                      {index + 1}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-base font-semibold text-white">{scenario.title}</h3>
+                      <p className="mt-1 text-sm leading-6 text-zinc-400">{scenario.prompt}</p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {scenario.signals.map((signal) => (
+                          <Pill key={signal}>{signal}</Pill>
+                        ))}
+                      </div>
+                    </div>
+                    <ChevronRight className={`mt-1 h-5 w-5 shrink-0 text-zinc-500 transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`} />
+                  </button>
+
+                  <div className={`mgr-domain-content ${isOpen ? 'mgr-domain-content--open' : ''}`}>
+                    <div>
+                      <div className="border-t border-white/10 p-5">
+                        <div className="grid gap-4 lg:grid-cols-2">
+                          <StudyBlock title="First checks" tone="white">
+                            <StudyList items={scenario.firstChecks} />
+                          </StudyBlock>
+                          <StudyBlock title="Answer frame" tone="cyan">
+                            <StudyList items={scenario.answerFrame} />
+                          </StudyBlock>
+                        </div>
+                        <div className="mt-4 rounded-lg border border-rose-300/25 bg-rose-300/10 p-3 text-sm leading-6 text-rose-50">
+                          <strong className="text-rose-100">Escalate when:</strong> {scenario.escalateWhen}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* QUESTIONS */}
+      {activeTab === 'questions' && (
+        <div className="space-y-6 mgr-stagger">
+          <div className="rounded-lg border border-white/10 bg-[#0d1117] p-5">
+            <p className="font-mono text-xs uppercase tracking-[0.24em] text-lime-200">Deep question bank · {totalQuestions} questions</p>
+            <h2 className="mt-2 text-2xl font-semibold text-white">Practice every question the manager could ask</h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">
+              Click each question to reveal a structured answer. The answers follow the SOC formula: define, explain behavior, name evidence/logs, connect to scenario.
+            </p>
+          </div>
+
+          <div className="grid gap-5 lg:grid-cols-2">
+            {managerRoundQuestionGroups.map((group) => (
+              <div key={group.title} className="mgr-glow-card rounded-lg bg-[#0d1117] p-5">
+                <p className="font-mono text-xs uppercase tracking-[0.18em] text-cyan-200">{group.focus}</p>
+                <h3 className="mt-2 text-lg font-semibold text-white">{group.title}</h3>
+                <div className="mt-4 grid gap-3">
+                  {group.questions.map((item) => (
+                    <QuestionCard key={item.question} question={item.question}>
+                      <AnswerBlocks items={item.answer} />
+                    </QuestionCard>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* STUDY PLAN */}
+      {activeTab === 'studyplan' && (
+        <div className="space-y-6 mgr-stagger">
+          <div className="rounded-lg border border-white/10 bg-[#0d1117] p-5">
+            <p className="font-mono text-xs uppercase tracking-[0.24em] text-lime-200">Structured preparation plan</p>
+            <h2 className="mt-2 text-2xl font-semibold text-white">Follow this order to maximize coverage</h2>
+          </div>
+
+          <div className="grid gap-5 lg:grid-cols-[1fr_0.9fr]">
+            <SectionPanel title="Study priority order" icon={Route}>
+              <div className="space-y-4">
+                {managerRoundStudyPlan.map((block, index) => (
+                  <div key={block.title} className="rounded-lg border border-white/10 bg-black/20 p-4">
+                    <p className="font-mono text-xs uppercase tracking-[0.18em] text-lime-200">Priority {index + 1}</p>
+                    <h3 className="mt-1 text-sm font-semibold text-white">{block.title}</h3>
+                    <div className="mt-3">
+                      <StudyList items={block.items} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </SectionPanel>
+
+            <div className="space-y-5">
+              <SectionPanel title="2026 threat landscape awareness" icon={AlertTriangle}>
+                <StudyList items={managerRoundThreatWatch} />
+              </SectionPanel>
+
+              <SectionPanel title="Research sources used" icon={FileText}>
+                <div className="grid gap-2">
+                  {managerRoundSources.map((source) => (
+                    <a
+                      key={source.url}
+                      href={source.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-lg border border-white/10 bg-white/[0.03] p-3 transition hover:border-lime-300/40 hover:bg-lime-300/10"
+                    >
+                      <h3 className="text-xs font-semibold text-white">{source.title}</h3>
+                      <p className="mt-1 text-xs leading-5 text-zinc-400">{source.whyItMatters}</p>
+                    </a>
+                  ))}
+                </div>
+              </SectionPanel>
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  )
+}
+
+/* ── Manager Round Inline Diagrams ────────────────────────────────── */
+
+function MgrDiagramNetworkTopology() {
+  const nodes = [
+    { x: 400, y: 30, label: 'Internet', color: '#71717a' },
+    { x: 400, y: 100, label: 'Edge Router', color: '#71717a' },
+    { x: 400, y: 170, label: 'Perimeter Firewall', color: '#bef264' },
+    { x: 200, y: 260, label: 'WAF', color: '#bef264' },
+    { x: 400, y: 260, label: 'Load Balancer', color: '#a5f3fc' },
+    { x: 600, y: 260, label: 'IDS / IPS', color: '#bef264' },
+    { x: 300, y: 350, label: 'Web / App Server', color: '#a5f3fc' },
+    { x: 500, y: 350, label: 'Web / App Server', color: '#a5f3fc' },
+    { x: 400, y: 440, label: 'Database Server', color: '#fde68a' },
+    { x: 400, y: 520, label: 'SIEM / Log Collector', color: '#bef264' },
+  ]
+
+  return (
+    <svg viewBox="0 0 800 580" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Zone labels */}
+      <rect x="140" y="230" width="520" height="65" rx="6" fill="none" stroke="rgba(190,255,71,0.15)" strokeDasharray="4 4" />
+      <text x="145" y="225" fill="rgba(190,255,71,0.4)" fontSize="10" fontFamily="monospace">DMZ ZONE</text>
+
+      <rect x="230" y="320" width="340" height="80" rx="6" fill="none" stroke="rgba(165,243,252,0.15)" strokeDasharray="4 4" />
+      <text x="235" y="315" fill="rgba(165,243,252,0.4)" fontSize="10" fontFamily="monospace">APPLICATION ZONE</text>
+
+      <rect x="320" y="410" width="160" height="60" rx="6" fill="none" stroke="rgba(253,230,138,0.15)" strokeDasharray="4 4" />
+      <text x="325" y="405" fill="rgba(253,230,138,0.4)" fontSize="10" fontFamily="monospace">DATA ZONE</text>
+
+      {/* Vertical connections (north-south) */}
+      <line x1="400" y1="48" x2="400" y2="88" stroke="#52525b" strokeWidth="2" className="svg-packet-flow" />
+      <line x1="400" y1="118" x2="400" y2="158" stroke="#52525b" strokeWidth="2" className="svg-packet-flow" />
+      <line x1="400" y1="188" x2="200" y2="248" stroke="rgba(190,255,71,0.5)" strokeWidth="2" className="svg-packet-flow" />
+      <line x1="400" y1="188" x2="400" y2="248" stroke="rgba(165,243,252,0.5)" strokeWidth="2" className="svg-packet-flow" />
+      <line x1="400" y1="188" x2="600" y2="248" stroke="rgba(190,255,71,0.5)" strokeWidth="2" className="svg-packet-flow" />
+      <line x1="300" y1="278" x2="300" y2="338" stroke="rgba(165,243,252,0.3)" strokeWidth="2" className="svg-packet-flow" />
+      <line x1="500" y1="278" x2="500" y2="338" stroke="rgba(165,243,252,0.3)" strokeWidth="2" className="svg-packet-flow" />
+      <line x1="300" y1="368" x2="400" y2="428" stroke="rgba(253,230,138,0.3)" strokeWidth="2" className="svg-packet-flow" />
+      <line x1="500" y1="368" x2="400" y2="428" stroke="rgba(253,230,138,0.3)" strokeWidth="2" className="svg-packet-flow" />
+      <line x1="400" y1="458" x2="400" y2="508" stroke="rgba(190,255,71,0.3)" strokeWidth="2" className="svg-packet-flow" />
+
+      {/* East-west arrow */}
+      <line x1="340" y1="355" x2="460" y2="355" stroke="rgba(252,165,165,0.5)" strokeWidth="2" strokeDasharray="6 3" className="svg-packet-flow-reverse" />
+      <text x="370" y="375" fill="rgba(252,165,165,0.6)" fontSize="8" fontFamily="monospace">E-W</text>
+
+      {/* Log feed lines to SIEM */}
+      {[200, 600].map((x) => (
+        <line key={x} x1={x} y1="278" x2={x < 400 ? 350 : 450} y2="520" stroke="rgba(190,255,71,0.12)" strokeWidth="1" strokeDasharray="3 5" />
+      ))}
+
+      {/* Nodes */}
+      {nodes.map((node, i) => (
+        <g key={i}>
+          <rect x={node.x - 65} y={node.y - 14} width="130" height="28" rx="6" fill="rgba(13,17,23,0.9)" stroke={node.color} strokeWidth="1.5" opacity="0.9" />
+          <text x={node.x} y={node.y + 4} textAnchor="middle" fill={node.color} fontSize="11" fontFamily="monospace" fontWeight="600">
+            {node.label}
+          </text>
+        </g>
+      ))}
+
+      {/* North-South label */}
+      <text x="720" y="200" fill="rgba(113,113,122,0.5)" fontSize="9" fontFamily="monospace" transform="rotate(90,720,200)">NORTH → SOUTH</text>
+    </svg>
+  )
+}
+
+function MgrDiagramTcpHandshake() {
+  return (
+    <svg viewBox="0 0 700 380" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Client and Server lines */}
+      <line x1="150" y1="30" x2="150" y2="360" stroke="#3f3f46" strokeWidth="2" />
+      <line x1="550" y1="30" x2="550" y2="360" stroke="#3f3f46" strokeWidth="2" />
+
+      {/* Labels */}
+      <text x="150" y="20" textAnchor="middle" fill="#bef264" fontSize="13" fontFamily="monospace" fontWeight="700">CLIENT</text>
+      <text x="550" y="20" textAnchor="middle" fill="#a5f3fc" fontSize="13" fontFamily="monospace" fontWeight="700">SERVER</text>
+
+      {/* SYN Arrow */}
+      <line x1="155" y1="70" x2="545" y2="110" stroke="#bef264" strokeWidth="2" markerEnd="url(#arrowLime)" className="svg-draw-line" style={{ animationDelay: '200ms' }} />
+      <text x="350" y="78" textAnchor="middle" fill="#bef264" fontSize="11" fontFamily="monospace">SYN [SEQ=100]</text>
+
+      {/* SYN-ACK Arrow */}
+      <line x1="545" y1="130" x2="155" y2="170" stroke="#a5f3fc" strokeWidth="2" markerEnd="url(#arrowCyan)" className="svg-draw-line" style={{ animationDelay: '700ms' }} />
+      <text x="350" y="140" textAnchor="middle" fill="#a5f3fc" fontSize="11" fontFamily="monospace">SYN-ACK [SEQ=300, ACK=101]</text>
+
+      {/* ACK Arrow */}
+      <line x1="155" y1="190" x2="545" y2="230" stroke="#bef264" strokeWidth="2" markerEnd="url(#arrowLime)" className="svg-draw-line" style={{ animationDelay: '1200ms' }} />
+      <text x="350" y="200" textAnchor="middle" fill="#bef264" fontSize="11" fontFamily="monospace">ACK [SEQ=101, ACK=301]</text>
+
+      {/* Connection Established */}
+      <rect x="230" y="248" width="240" height="28" rx="6" fill="rgba(190,255,71,0.12)" stroke="#bef264" strokeWidth="1" />
+      <text x="350" y="266" textAnchor="middle" fill="#bef264" fontSize="11" fontFamily="monospace" fontWeight="600">CONNECTION ESTABLISHED</text>
+
+      {/* FIN sequence (dimmer) */}
+      <line x1="155" y1="300" x2="545" y2="320" stroke="#52525b" strokeWidth="1.5" strokeDasharray="4 3" />
+      <text x="350" y="298" textAnchor="middle" fill="#71717a" fontSize="9" fontFamily="monospace">FIN → ACK → FIN → ACK (connection teardown)</text>
+
+      {/* Arrow markers */}
+      <defs>
+        <marker id="arrowLime" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#bef264" />
+        </marker>
+        <marker id="arrowCyan" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#a5f3fc" />
+        </marker>
+      </defs>
+    </svg>
+  )
+}
+
+function MgrDiagramOsiModel() {
+  const osiLayers = [
+    { num: 7, name: 'Application', proto: 'HTTP, DNS, FTP, SMTP', pdu: 'Data', color: '#bef264' },
+    { num: 6, name: 'Presentation', proto: 'SSL/TLS, JPEG, ASCII', pdu: 'Data', color: '#bef264' },
+    { num: 5, name: 'Session', proto: 'NetBIOS, RPC', pdu: 'Data', color: '#bef264' },
+    { num: 4, name: 'Transport', proto: 'TCP, UDP', pdu: 'Segment', color: '#a5f3fc' },
+    { num: 3, name: 'Network', proto: 'IP, ICMP, ARP', pdu: 'Packet', color: '#fde68a' },
+    { num: 2, name: 'Data Link', proto: 'Ethernet, WiFi, MAC', pdu: 'Frame', color: '#fca5a5' },
+    { num: 1, name: 'Physical', proto: 'Cables, Signals, Bits', pdu: 'Bits', color: '#a3a3a3' },
+  ]
+
+  const tcpipLayers = [
+    { name: 'Application', maps: '7-6-5', color: '#bef264', h: 3 },
+    { name: 'Transport', maps: '4', color: '#a5f3fc', h: 1 },
+    { name: 'Internet', maps: '3', color: '#fde68a', h: 1 },
+    { name: 'Network Access', maps: '2-1', color: '#fca5a5', h: 2 },
+  ]
+
+  const layerH = 42
+  const startY = 30
+
+  return (
+    <svg viewBox="0 0 800 370" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Title */}
+      <text x="200" y="20" textAnchor="middle" fill="#bef264" fontSize="12" fontFamily="monospace" fontWeight="700">OSI MODEL</text>
+      <text x="600" y="20" textAnchor="middle" fill="#a5f3fc" fontSize="12" fontFamily="monospace" fontWeight="700">TCP/IP MODEL</text>
+
+      {/* OSI layers */}
+      {osiLayers.map((layer, i) => {
+        const y = startY + i * layerH
+        return (
+          <g key={layer.num}>
+            <rect x="60" y={y} width="280" height={layerH - 4} rx="4" fill="rgba(13,17,23,0.8)" stroke={layer.color} strokeWidth="1.2" opacity="0.9" />
+            <text x="75" y={y + 16} fill={layer.color} fontSize="10" fontFamily="monospace" fontWeight="700">L{layer.num}</text>
+            <text x="100" y={y + 16} fill="#ffffff" fontSize="11" fontFamily="monospace" fontWeight="600">{layer.name}</text>
+            <text x="100" y={y + 30} fill="#71717a" fontSize="9" fontFamily="monospace">{layer.proto}</text>
+            <text x="320" y={y + 20} fill={layer.color} fontSize="9" fontFamily="monospace" textAnchor="end">{layer.pdu}</text>
+          </g>
+        )
+      })}
+
+      {/* TCP/IP layers */}
+      {(() => {
+        let yOffset = 0
+        return tcpipLayers.map((layer) => {
+          const y = startY + yOffset * layerH
+          const height = layer.h * layerH - 4
+          yOffset += layer.h
+          return (
+            <g key={layer.name}>
+              <rect x="460" y={y} width="280" height={height} rx="4" fill="rgba(13,17,23,0.8)" stroke={layer.color} strokeWidth="1.2" opacity="0.9" />
+              <text x="475" y={y + height / 2 + 4} fill="#ffffff" fontSize="12" fontFamily="monospace" fontWeight="600">{layer.name}</text>
+            </g>
+          )
+        })
+      })()}
+
+      {/* Mapping lines */}
+      <line x1="340" y1={startY + 63} x2="460" y2={startY + 63} stroke="rgba(190,255,71,0.3)" strokeWidth="1" strokeDasharray="4 3" />
+      <line x1="340" y1={startY + layerH * 3 + 18} x2="460" y2={startY + layerH * 3 + 18} stroke="rgba(165,243,252,0.3)" strokeWidth="1" strokeDasharray="4 3" />
+      <line x1="340" y1={startY + layerH * 4 + 18} x2="460" y2={startY + layerH * 4 + 18} stroke="rgba(253,230,138,0.3)" strokeWidth="1" strokeDasharray="4 3" />
+      <line x1="340" y1={startY + layerH * 5 + 38} x2="460" y2={startY + layerH * 5 + 38} stroke="rgba(252,165,165,0.3)" strokeWidth="1" strokeDasharray="4 3" />
+    </svg>
+  )
+}
+
+function MgrDiagramIncidentLifecycle() {
+  const stages = [
+    { label: 'Preparation', sub: 'Tools, playbooks, training', angle: -90 },
+    { label: 'Detection', sub: 'SIEM alerts, user reports', angle: -30 },
+    { label: 'Containment', sub: 'Isolate, block, preserve', angle: 30 },
+    { label: 'Eradication', sub: 'Remove malware, patch', angle: 90 },
+    { label: 'Recovery', sub: 'Restore, monitor, validate', angle: 150 },
+    { label: 'Lessons', sub: 'RCA, update, improve', angle: 210 },
+  ]
+
+  const cx = 350
+  const cy = 200
+  const radius = 145
+
+  return (
+    <svg viewBox="0 0 700 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Center text */}
+      <text x={cx} y={cy - 8} textAnchor="middle" fill="#bef264" fontSize="12" fontFamily="monospace" fontWeight="700">NIST SP 800-61</text>
+      <text x={cx} y={cy + 8} textAnchor="middle" fill="#71717a" fontSize="10" fontFamily="monospace">Incident Response</text>
+      <text x={cx} y={cy + 22} textAnchor="middle" fill="#71717a" fontSize="10" fontFamily="monospace">Lifecycle</text>
+
+      {/* Connection arcs */}
+      {stages.map((_, i) => {
+        const nextI = (i + 1) % stages.length
+        const rad1 = (stages[i].angle * Math.PI) / 180
+        const rad2 = (stages[nextI].angle * Math.PI) / 180
+        const x1 = cx + Math.cos(rad1) * (radius - 20)
+        const y1 = cy + Math.sin(rad1) * (radius - 20)
+        const x2 = cx + Math.cos(rad2) * (radius - 20)
+        const y2 = cy + Math.sin(rad2) * (radius - 20)
+        return (
+          <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="rgba(190,255,71,0.2)" strokeWidth="1.5" className="svg-packet-flow" />
+        )
+      })}
+
+      {/* Stage nodes */}
+      {stages.map((stage, i) => {
+        const rad = (stage.angle * Math.PI) / 180
+        const x = cx + Math.cos(rad) * radius
+        const y = cy + Math.sin(rad) * radius
+        return (
+          <g key={i}>
+            <circle cx={x} cy={y} r="40" fill="rgba(13,17,23,0.9)" stroke="#bef264" strokeWidth="1.5" />
+            <text x={x} y={y - 4} textAnchor="middle" fill="#ffffff" fontSize="10" fontFamily="monospace" fontWeight="600">{stage.label}</text>
+            <text x={x} y={y + 10} textAnchor="middle" fill="#71717a" fontSize="7" fontFamily="monospace">{stage.sub}</text>
+          </g>
+        )
+      })}
+    </svg>
+  )
+}
+
+function MgrDiagramAttackFlow() {
+  const stages = [
+    { name: 'Recon', technique: 'T1595', color: '#a5f3fc' },
+    { name: 'Weaponize', technique: 'T1587', color: '#a5f3fc' },
+    { name: 'Deliver', technique: 'T1566', color: '#fde68a' },
+    { name: 'Exploit', technique: 'T1190', color: '#fde68a' },
+    { name: 'Install', technique: 'T1547', color: '#fca5a5' },
+    { name: 'C2', technique: 'T1071', color: '#fca5a5' },
+    { name: 'Actions', technique: 'T1486', color: '#f87171' },
+  ]
+
+  const startX = 40
+  const stageW = 90
+  const gap = 8
+
+  return (
+    <svg viewBox="0 0 750 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {stages.map((stage, i) => {
+        const x = startX + i * (stageW + gap)
+        return (
+          <g key={i}>
+            <rect x={x} y="20" width={stageW} height="50" rx="6" fill="rgba(13,17,23,0.9)" stroke={stage.color} strokeWidth="1.5" />
+            <text x={x + stageW / 2} y="46" textAnchor="middle" fill="#ffffff" fontSize="11" fontFamily="monospace" fontWeight="600">{stage.name}</text>
+            <text x={x + stageW / 2} y="62" textAnchor="middle" fill={stage.color} fontSize="8" fontFamily="monospace">{stage.technique}</text>
+
+            {/* Arrow to next */}
+            {i < stages.length - 1 && (
+              <line x1={x + stageW + 1} y1="45" x2={x + stageW + gap - 1} y2="45" stroke={stage.color} strokeWidth="2" markerEnd="url(#arrowKC)" />
+            )}
+
+            {/* SOC detection marker */}
+            {(i === 2 || i === 3 || i === 4 || i === 5) && (
+              <>
+                <rect x={x + 20} y="80" width={stageW - 40} height="20" rx="4" fill="rgba(190,255,71,0.1)" stroke="rgba(190,255,71,0.3)" strokeWidth="1" />
+                <text x={x + stageW / 2} y="94" textAnchor="middle" fill="#bef264" fontSize="7" fontFamily="monospace">SOC DETECT</text>
+              </>
+            )}
+          </g>
+        )
+      })}
+
+      {/* Gradient progress bar */}
+      <rect x={startX} y="115" width={stages.length * (stageW + gap) - gap} height="4" rx="2" fill="url(#kcGrad)" opacity="0.4" />
+
+      <defs>
+        <marker id="arrowKC" markerWidth="6" markerHeight="5" refX="5" refY="2.5" orient="auto">
+          <polygon points="0 0, 6 2.5, 0 5" fill="#71717a" />
+        </marker>
+        <linearGradient id="kcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#a5f3fc" />
+          <stop offset="50%" stopColor="#fde68a" />
+          <stop offset="100%" stopColor="#f87171" />
+        </linearGradient>
+      </defs>
+    </svg>
+  )
+}
+
+function MgrDiagramPhishingFlow() {
+  return (
+    <svg viewBox="0 0 760 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Start */}
+      <rect x="300" y="10" width="160" height="32" rx="16" fill="rgba(190,255,71,0.12)" stroke="#bef264" strokeWidth="1.5" />
+      <text x="380" y="30" textAnchor="middle" fill="#bef264" fontSize="11" fontFamily="monospace" fontWeight="600">Email Reported</text>
+
+      <line x1="380" y1="42" x2="380" y2="62" stroke="#52525b" strokeWidth="1.5" />
+
+      {/* Step 1 */}
+      <rect x="290" y="62" width="180" height="30" rx="4" fill="rgba(13,17,23,0.9)" stroke="#a5f3fc" strokeWidth="1" />
+      <text x="380" y="82" textAnchor="middle" fill="#a5f3fc" fontSize="10" fontFamily="monospace">Inspect Headers + Auth</text>
+
+      <line x1="380" y1="92" x2="380" y2="112" stroke="#52525b" strokeWidth="1.5" />
+
+      {/* Decision: SPF/DKIM/DMARC */}
+      <polygon points="380,112 440,142 380,172 320,142" fill="rgba(253,230,138,0.08)" stroke="#fde68a" strokeWidth="1" />
+      <text x="380" y="140" textAnchor="middle" fill="#fde68a" fontSize="9" fontFamily="monospace">SPF/DKIM</text>
+      <text x="380" y="152" textAnchor="middle" fill="#fde68a" fontSize="9" fontFamily="monospace">pass?</text>
+
+      {/* Pass branch */}
+      <line x1="440" y1="142" x2="560" y2="142" stroke="#52525b" strokeWidth="1" />
+      <text x="500" y="136" fill="#71717a" fontSize="8" fontFamily="monospace">PASS</text>
+      <rect x="560" y="128" width="140" height="28" rx="4" fill="rgba(13,17,23,0.9)" stroke="#71717a" strokeWidth="1" />
+      <text x="630" y="146" textAnchor="middle" fill="#71717a" fontSize="9" fontFamily="monospace">Check URLs + Body</text>
+
+      {/* Fail branch */}
+      <line x1="320" y1="142" x2="200" y2="142" stroke="#52525b" strokeWidth="1" />
+      <text x="260" y="136" fill="#fca5a5" fontSize="8" fontFamily="monospace">FAIL</text>
+      <rect x="60" y="128" width="140" height="28" rx="4" fill="rgba(252,165,165,0.08)" stroke="#fca5a5" strokeWidth="1" />
+      <text x="130" y="146" textAnchor="middle" fill="#fca5a5" fontSize="9" fontFamily="monospace">Flag as Suspicious</text>
+
+      {/* Continue main flow */}
+      <line x1="380" y1="172" x2="380" y2="202" stroke="#52525b" strokeWidth="1.5" />
+
+      {/* Step 2 */}
+      <rect x="290" y="202" width="180" height="30" rx="4" fill="rgba(13,17,23,0.9)" stroke="#a5f3fc" strokeWidth="1" />
+      <text x="380" y="222" textAnchor="middle" fill="#a5f3fc" fontSize="10" fontFamily="monospace">Check URL Reputation</text>
+
+      <line x1="380" y1="232" x2="380" y2="252" stroke="#52525b" strokeWidth="1.5" />
+
+      {/* Step 3 */}
+      <rect x="290" y="252" width="180" height="30" rx="4" fill="rgba(13,17,23,0.9)" stroke="#a5f3fc" strokeWidth="1" />
+      <text x="380" y="272" textAnchor="middle" fill="#a5f3fc" fontSize="10" fontFamily="monospace">Scan Attachments</text>
+
+      <line x1="380" y1="282" x2="380" y2="302" stroke="#52525b" strokeWidth="1.5" />
+
+      {/* Decision: User clicked? */}
+      <polygon points="380,302 440,332 380,362 320,332" fill="rgba(252,165,165,0.08)" stroke="#fca5a5" strokeWidth="1" />
+      <text x="380" y="330" textAnchor="middle" fill="#fca5a5" fontSize="9" fontFamily="monospace">User</text>
+      <text x="380" y="342" textAnchor="middle" fill="#fca5a5" fontSize="9" fontFamily="monospace">clicked?</text>
+
+      {/* No click */}
+      <line x1="320" y1="332" x2="140" y2="332" stroke="#52525b" strokeWidth="1" />
+      <text x="230" y="326" fill="#86efac" fontSize="8" fontFamily="monospace">NO</text>
+      <rect x="40" y="318" width="100" height="28" rx="14" fill="rgba(134,239,172,0.1)" stroke="#86efac" strokeWidth="1" />
+      <text x="90" y="336" textAnchor="middle" fill="#86efac" fontSize="9" fontFamily="monospace">Block + Purge</text>
+
+      {/* Clicked */}
+      <line x1="440" y1="332" x2="600" y2="332" stroke="#52525b" strokeWidth="1" />
+      <text x="520" y="326" fill="#fca5a5" fontSize="8" fontFamily="monospace">YES</text>
+      <rect x="600" y="310" width="140" height="44" rx="6" fill="rgba(252,165,165,0.1)" stroke="#fca5a5" strokeWidth="1.5" />
+      <text x="670" y="330" textAnchor="middle" fill="#fca5a5" fontSize="9" fontFamily="monospace" fontWeight="600">Credential Reset</text>
+      <text x="670" y="344" textAnchor="middle" fill="#fca5a5" fontSize="9" fontFamily="monospace" fontWeight="600">+ Isolate Endpoint</text>
+
+      {/* Bottom outcomes */}
+      <line x1="380" y1="362" x2="380" y2="392" stroke="#52525b" strokeWidth="1" />
+      <rect x="300" y="392" width="160" height="24" rx="4" fill="rgba(190,255,71,0.08)" stroke="#bef264" strokeWidth="1" />
+      <text x="380" y="408" textAnchor="middle" fill="#bef264" fontSize="9" fontFamily="monospace">Document + Close Ticket</text>
+    </svg>
   )
 }
 

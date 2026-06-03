@@ -110,3 +110,350 @@ a {
       100% 100%;
   }
 }
+
+/* ────────────────────────────────────────────────────────────────────
+   Manager Round — Tab Navigation
+   ──────────────────────────────────────────────────────────────────── */
+
+.mgr-tabs {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(13, 17, 23, 0.8);
+  backdrop-filter: blur(12px);
+}
+
+.mgr-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.mgr-tab {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(161, 161, 170, 0.9);
+  background: transparent;
+  cursor: pointer;
+  transition: all 220ms ease;
+  white-space: nowrap;
+}
+
+.mgr-tab:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.mgr-tab--active {
+  color: #000000;
+  background: #bef264;
+  border-color: rgba(190, 255, 71, 0.5);
+  box-shadow: 0 0 20px rgba(190, 255, 71, 0.15);
+}
+
+.mgr-tab--active:hover {
+  color: #000000;
+  background: #d4fc79;
+  border-color: rgba(190, 255, 71, 0.6);
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   Manager Round — Diagram Containers
+   ──────────────────────────────────────────────────────────────────── */
+
+.diagram-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(
+    145deg,
+    rgba(13, 17, 23, 0.95) 0%,
+    rgba(7, 9, 12, 0.98) 100%
+  );
+  backdrop-filter: blur(8px);
+  padding: 24px;
+}
+
+.diagram-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 20% 20%,
+    rgba(190, 255, 71, 0.04) 0%,
+    transparent 50%
+  );
+  pointer-events: none;
+}
+
+.diagram-container svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.diagram-label {
+  position: absolute;
+  top: 16px;
+  left: 20px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2em !important;
+  text-transform: uppercase;
+  color: rgba(190, 255, 71, 0.7);
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   Manager Round — SVG Animations
+   ──────────────────────────────────────────────────────────────────── */
+
+@keyframes packet-flow {
+  0% { stroke-dashoffset: 24; }
+  100% { stroke-dashoffset: 0; }
+}
+
+@keyframes packet-flow-reverse {
+  0% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: 24; }
+}
+
+@keyframes svg-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes svg-pulse-glow {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(190, 255, 71, 0.2)); }
+  50% { filter: drop-shadow(0 0 12px rgba(190, 255, 71, 0.5)); }
+}
+
+@keyframes draw-line {
+  from { stroke-dashoffset: 1000; }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes arrow-appear {
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes node-pop {
+  0% { transform: scale(0.8); opacity: 0; }
+  60% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(190, 255, 71, 0); }
+  50% { box-shadow: 0 0 24px 4px rgba(190, 255, 71, 0.12); }
+}
+
+.svg-packet-flow {
+  stroke-dasharray: 8 4;
+  animation: packet-flow 800ms linear infinite;
+}
+
+.svg-packet-flow-reverse {
+  stroke-dasharray: 8 4;
+  animation: packet-flow-reverse 800ms linear infinite;
+}
+
+.svg-pulse {
+  animation: svg-pulse 2s ease-in-out infinite;
+}
+
+.svg-pulse-glow {
+  animation: svg-pulse-glow 2.5s ease-in-out infinite;
+}
+
+.svg-draw-line {
+  stroke-dasharray: 1000;
+  animation: draw-line 2s ease-out forwards;
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   Manager Round — Domain Cards Stagger
+   ──────────────────────────────────────────────────────────────────── */
+
+.mgr-stagger > * {
+  animation: fade-in-up 420ms ease-out both;
+}
+
+.mgr-stagger > *:nth-child(1) { animation-delay: 50ms; }
+.mgr-stagger > *:nth-child(2) { animation-delay: 110ms; }
+.mgr-stagger > *:nth-child(3) { animation-delay: 170ms; }
+.mgr-stagger > *:nth-child(4) { animation-delay: 230ms; }
+.mgr-stagger > *:nth-child(5) { animation-delay: 290ms; }
+.mgr-stagger > *:nth-child(6) { animation-delay: 350ms; }
+.mgr-stagger > *:nth-child(7) { animation-delay: 410ms; }
+.mgr-stagger > *:nth-child(8) { animation-delay: 470ms; }
+.mgr-stagger > *:nth-child(9) { animation-delay: 530ms; }
+.mgr-stagger > *:nth-child(10) { animation-delay: 590ms; }
+.mgr-stagger > *:nth-child(11) { animation-delay: 650ms; }
+.mgr-stagger > *:nth-child(12) { animation-delay: 710ms; }
+.mgr-stagger > *:nth-child(13) { animation-delay: 770ms; }
+.mgr-stagger > *:nth-child(14) { animation-delay: 830ms; }
+.mgr-stagger > *:nth-child(15) { animation-delay: 890ms; }
+.mgr-stagger > *:nth-child(16) { animation-delay: 950ms; }
+.mgr-stagger > *:nth-child(17) { animation-delay: 1010ms; }
+
+/* ────────────────────────────────────────────────────────────────────
+   Manager Round — Glow & Interactive Effects
+   ──────────────────────────────────────────────────────────────────── */
+
+.mgr-glow-card {
+  transition: all 280ms ease;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mgr-glow-card:hover {
+  border-color: rgba(190, 255, 71, 0.3);
+  box-shadow:
+    0 0 0 1px rgba(190, 255, 71, 0.08),
+    0 8px 32px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+}
+
+.mgr-active-glow {
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   Manager Round — Progress Ring
+   ──────────────────────────────────────────────────────────────────── */
+
+.progress-ring-circle {
+  transition: stroke-dashoffset 600ms ease;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   Manager Round — Stat Counter
+   ──────────────────────────────────────────────────────────────────── */
+
+.mgr-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  text-align: center;
+}
+
+.mgr-stat-value {
+  font-size: 32px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #bef264, #a5f3fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.1;
+}
+
+.mgr-stat-label {
+  margin-top: 6px;
+  font-size: 12px;
+  color: rgba(161, 161, 170, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.15em !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   Manager Round — Scenario Difficulty Badge
+   ──────────────────────────────────────────────────────────────────── */
+
+.mgr-difficulty-easy {
+  color: #86efac;
+  border-color: rgba(134, 239, 172, 0.3);
+  background: rgba(134, 239, 172, 0.08);
+}
+
+.mgr-difficulty-medium {
+  color: #fde68a;
+  border-color: rgba(253, 230, 138, 0.3);
+  background: rgba(253, 230, 138, 0.08);
+}
+
+.mgr-difficulty-hard {
+  color: #fca5a5;
+  border-color: rgba(252, 165, 165, 0.3);
+  background: rgba(252, 165, 165, 0.08);
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   Manager Round — Hero Gradient
+   ──────────────────────────────────────────────────────────────────── */
+
+.mgr-hero-gradient {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 10% 30%, rgba(190, 255, 71, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 60%, rgba(165, 243, 252, 0.06) 0%, transparent 45%),
+    radial-gradient(ellipse at 50% 90%, rgba(190, 255, 71, 0.04) 0%, transparent 40%);
+  pointer-events: none;
+}
+
+.mgr-hero-gradient::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(190, 255, 71, 0.7) 30%, rgba(165, 243, 252, 0.5) 70%, transparent 100%);
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   Manager Round — Scrollable diagram gallery
+   ──────────────────────────────────────────────────────────────────── */
+
+.diagram-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
+  gap: 20px;
+}
+
+@media (max-width: 640px) {
+  .diagram-gallery {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   Manager Round — Domain expand/collapse
+   ──────────────────────────────────────────────────────────────────── */
+
+.mgr-domain-content {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 300ms ease;
+}
+
+.mgr-domain-content--open {
+  grid-template-rows: 1fr;
+}
+
+.mgr-domain-content > div {
+  overflow: hidden;
+}
