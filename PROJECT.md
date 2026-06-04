@@ -78,3 +78,10 @@ A personalized interactive console built for Chennai SOC Analyst interview prepa
 - Embedded YouTube live stream: [Lofi Hip Hop Radio](https://www.youtube.com/live/YmQ7jRgf4f0) with autoplay on user interaction.
 - Fully responsive for mobile viewports with scaled vinyl and 2-column tip grid.
 
+### Milestone 10: Persistent Wellness Tools, Custom Audio Controls, and Stats Reset
+- **Background Playback Preservation**: Refactored the core application layout from React conditional rendering to CSS-based visibility toggling (`display: none` / `display: block`). This keeps the Pomodoro timer and Focus Music iframe mounted in the DOM, allowing music to play and the timer to count down continuously when navigating across different sections of the dashboard.
+- **YouTube IFrame API Integration**: Integrated the official YouTube Player API to create a unified audio-first control system. Replaced the static iframe with custom glassmorphism player controls (play/pause toggle, interactive volume slider, and instant mute).
+- **Pomodoro Stats Reset**: Added a dedicated reset action for session tracking (Focus Today, Cycle Progress, Completed Cycles) to allow clearing logs and starting fresh.
+- **GitHub Pages Deployment Verification**: Successfully pushed code changes to `main` and verified that the automatic GitHub Actions workflow built and deployed the live app to [https://kutral.github.io/temp/](https://kutral.github.io/temp/).
+
+
