@@ -1350,19 +1350,27 @@ function App() {
           </header>
 
           <div className="px-5 pb-28 pt-6 lg:px-8 lg:py-8">
-            {activeSection === 'dashboard' && (
+            <div style={{ display: activeSection === 'dashboard' ? 'block' : 'none' }}>
               <Dashboard
                 questionCount={questionCount}
                 masteredCount={masteredCount}
                 progressPercent={progressPercent}
                 onOpenTopics={() => setActiveSection('topics')}
               />
-            )}
-            {activeSection === 'manager' && <ManagerRoundSection />}
-            {activeSection === 'resumeQuestions' && <ResumeQuestionsSection />}
-            {activeSection === 'resume' && <ResumeSection />}
-            {activeSection === 'questions' && <QuestionsSection />}
-            {activeSection === 'topics' && (
+            </div>
+            <div style={{ display: activeSection === 'manager' ? 'block' : 'none' }}>
+              <ManagerRoundSection />
+            </div>
+            <div style={{ display: activeSection === 'resumeQuestions' ? 'block' : 'none' }}>
+              <ResumeQuestionsSection />
+            </div>
+            <div style={{ display: activeSection === 'resume' ? 'block' : 'none' }}>
+              <ResumeSection />
+            </div>
+            <div style={{ display: activeSection === 'questions' ? 'block' : 'none' }}>
+              <QuestionsSection />
+            </div>
+            <div style={{ display: activeSection === 'topics' ? 'block' : 'none' }}>
               <TopicsSection
                 query={query}
                 topics={filteredTopics}
@@ -1371,11 +1379,19 @@ function App() {
                 masteredTopicIds={masteredTopicIds}
                 onToggleMastered={toggleMasteredTopic}
               />
-            )}
-            {activeSection === 'playbooks' && <PlaybooksSection />}
-            {activeSection === 'zoho' && <ZohoSection />}
-            {activeSection === 'cheatsheet' && <CheatSheetSection />}
-            {activeSection === 'wellness' && <WellnessSection />}
+            </div>
+            <div style={{ display: activeSection === 'playbooks' ? 'block' : 'none' }}>
+              <PlaybooksSection />
+            </div>
+            <div style={{ display: activeSection === 'zoho' ? 'block' : 'none' }}>
+              <ZohoSection />
+            </div>
+            <div style={{ display: activeSection === 'cheatsheet' ? 'block' : 'none' }}>
+              <CheatSheetSection />
+            </div>
+            <div style={{ display: activeSection === 'wellness' ? 'block' : 'none' }}>
+              <WellnessSection />
+            </div>
           </div>
         </main>
       </div>

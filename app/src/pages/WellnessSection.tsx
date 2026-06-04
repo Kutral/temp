@@ -157,11 +157,17 @@ export default function WellnessSection() {
         </button>
       </div>
 
-      {/* Content */}
+      {/* Content Area */}
       <div className="wellness-content">
-        {activeTab === 'pomodoro' && <PomodoroTimer />}
-        {activeTab === 'breathing' && <BoxBreathing />}
-        {activeTab === 'music' && <FocusMusic />}
+        <div style={{ display: activeTab === 'pomodoro' ? 'block' : 'none' }}>
+          <PomodoroTimer />
+        </div>
+        <div style={{ display: activeTab === 'breathing' ? 'block' : 'none' }}>
+          <BoxBreathing />
+        </div>
+        <div style={{ display: activeTab === 'music' ? 'block' : 'none' }}>
+          <FocusMusic />
+        </div>
       </div>
     </div>
   )
@@ -502,25 +508,45 @@ function PomodoroTimer() {
       )}
 
       {/* Session Stats */}
-      <div className="pomodoro-stats">
-        <div className="pomodoro-stat">
-          <span className="pomodoro-stat-value" style={{ color: colors.text }}>{completedSessions}</span>
-          <span className="pomodoro-stat-label">Sessions</span>
+      <div className="pomodoro-stats-row">
+        <div className="pomodoro-stats">
+          <div className="pomodoro-stat">
+            <span className="pomodoro-stat-value" style={{ color: colors.text }}>{completedSessions}</span>
+            <span className="pomodoro-stat-label">Sessions</span>
+          </div>
+          <div className="pomodoro-stat-divider" />
+          <div className="pomodoro-stat">
+            <span className="pomodoro-stat-value" style={{ color: colors.text }}>
+              {Math.floor(totalFocusToday / 60)}m
+            </span>
+            <span className="pomodoro-stat-label">Focus Today</span>
+          </div>
+          <div className="pomodoro-stat-divider" />
+          <div className="pomodoro-stat">
+            <span className="pomodoro-stat-value" style={{ color: colors.text }}>
+              {completedSessions > 0 ? `${Math.round((completedSessions / settings.sessionsBeforeLong) * 100)}%` : '—'}
+            </span>
+            <span className="pomodoro-stat-label">Cycle Progress</span>
+          </div>
         </div>
-        <div className="pomodoro-stat-divider" />
-        <div className="pomodoro-stat">
-          <span className="pomodoro-stat-value" style={{ color: colors.text }}>
-            {Math.floor(totalFocusToday / 60)}m
-          </span>
-          <span className="pomodoro-stat-label">Focus Today</span>
-        </div>
-        <div className="pomodoro-stat-divider" />
-        <div className="pomodoro-stat">
-          <span className="pomodoro-stat-value" style={{ color: colors.text }}>
-            {completedSessions > 0 ? `${Math.round((completedSessions / settings.sessionsBeforeLong) * 100)}%` : '—'}
-          </span>
-          <span className="pomodoro-stat-label">Cycle Progress</span>
-        </div>
+        {(completedSessions > 0 || totalFocusToday > 0) && (
+          <button
+            type="button"
+            className="pomodoro-reset-stats-btn"
+            onClick={() => {
+              setCompletedSessions(0)
+              setTotalFocusToday(0)
+              resetTimer()
+            }}
+            title="Reset all stats"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+              <path d="M3 3v5h5" />
+            </svg>
+            <span>Reset</span>
+          </button>
+        )}
       </div>
 
       {/* Session dots */}
@@ -898,13 +924,121 @@ function BoxBreathing() {
 // ═══════════════════════════════════════════════════════════════════════
 // FOCUS MUSIC
 // ═══════════════════════════════════════════════════════════════════════
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type YTPlayer = any
+
 function FocusMusic() {
   const [isPlaying, setIsPlaying] = useState(false)
-  const iframeRef = useRef<HTMLIFrameElement>(null)
+  const [isPaused, setIsPaused] = useState(false)
+  const [volume, setVolume] = useState(70)
+  const [isMuted, setIsMuted] = useState(false)
+  const playerRef = useRef<YTPlayer>(null)
+  const playerContainerRef = useRef<HTMLDivElement>(null)
+  const apiLoadedRef = useRef(false)
 
-  const handlePlay = () => {
+  // Load YouTube IFrame API
+  useEffect(() => {
+    if (apiLoadedRef.current) return
+    apiLoadedRef.current = true
+
+    // If already loaded
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((window as any).YT && (window as any).YT.Player) return
+
+    const tag = document.createElement('script')
+    tag.src = 'https://www.youtube.com/iframe_api'
+    document.head.appendChild(tag)
+  }, [])
+
+  const initPlayer = useCallback(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const YT = (window as any).YT
+    if (!YT || !YT.Player || !playerContainerRef.current) return
+
+    playerRef.current = new YT.Player(playerContainerRef.current, {
+      videoId: 'YmQ7jRgf4f0',
+      height: '100%',
+      width: '100%',
+      playerVars: {
+        autoplay: 1,
+        modestbranding: 1,
+        rel: 0,
+        fs: 1,
+      },
+      events: {
+        onReady: (event: { target: YTPlayer }) => {
+          event.target.setVolume(volume)
+          event.target.playVideo()
+        },
+        onStateChange: (event: { data: number }) => {
+          // YT.PlayerState: PLAYING=1, PAUSED=2
+          if (event.data === 1) {
+            setIsPaused(false)
+          } else if (event.data === 2) {
+            setIsPaused(true)
+          }
+        },
+      },
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const handleStart = useCallback(() => {
     setIsPlaying(true)
-  }
+    // Wait for DOM to render the container, then init player
+    setTimeout(() => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const YT = (window as any).YT
+      if (YT && YT.Player) {
+        initPlayer()
+      } else {
+        // API not loaded yet, wait for it
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(window as any).onYouTubeIframeAPIReady = () => {
+          initPlayer()
+        }
+      }
+    }, 100)
+  }, [initPlayer])
+
+  const togglePlayPause = useCallback(() => {
+    if (!playerRef.current) return
+    try {
+      if (isPaused) {
+        playerRef.current.playVideo()
+      } else {
+        playerRef.current.pauseVideo()
+      }
+    } catch { /* player not ready */ }
+  }, [isPaused])
+
+  const handleVolumeChange = useCallback((newVol: number) => {
+    setVolume(newVol)
+    if (playerRef.current) {
+      try {
+        playerRef.current.setVolume(newVol)
+        if (newVol > 0 && isMuted) {
+          playerRef.current.unMute()
+          setIsMuted(false)
+        }
+      } catch { /* player not ready */ }
+    }
+  }, [isMuted])
+
+  const toggleMute = useCallback(() => {
+    if (!playerRef.current) return
+    try {
+      if (isMuted) {
+        playerRef.current.unMute()
+        playerRef.current.setVolume(volume)
+        setIsMuted(false)
+      } else {
+        playerRef.current.mute()
+        setIsMuted(true)
+      }
+    } catch { /* player not ready */ }
+  }, [isMuted, volume])
 
   return (
     <div className="focus-music-container">
@@ -913,7 +1047,7 @@ function FocusMusic() {
 
       {/* Vinyl / Album art area */}
       <div className="focus-music-visual">
-        <div className={`focus-music-vinyl ${isPlaying ? 'focus-music-vinyl--spinning' : ''}`}>
+        <div className={`focus-music-vinyl ${isPlaying && !isPaused ? 'focus-music-vinyl--spinning' : ''}`}>
           <div className="focus-music-vinyl-grooves" />
           <div className="focus-music-vinyl-grooves focus-music-vinyl-grooves--2" />
           <div className="focus-music-vinyl-grooves focus-music-vinyl-grooves--3" />
@@ -927,14 +1061,14 @@ function FocusMusic() {
         </div>
 
         {/* Waveform bars */}
-        <div className={`focus-music-waveform ${isPlaying ? 'focus-music-waveform--active' : ''}`}>
+        <div className={`focus-music-waveform ${isPlaying && !isPaused ? 'focus-music-waveform--active' : ''}`}>
           {Array.from({ length: 32 }).map((_, i) => (
             <div
               key={i}
               className="focus-music-bar"
               style={{
                 animationDelay: `${i * 0.07}s`,
-                height: isPlaying ? undefined : '4px',
+                height: isPlaying && !isPaused ? undefined : '4px',
               }}
             />
           ))}
@@ -944,55 +1078,97 @@ function FocusMusic() {
       {/* Track info */}
       <div className="focus-music-info">
         <h3 className="focus-music-title">Lofi Hip Hop Radio</h3>
-        <p className="focus-music-subtitle">beats to relax/study to · 24/7 live stream</p>
+        <p className="focus-music-subtitle">
+          beats to relax/study to · 24/7 live stream
+          {isPlaying && (
+            <span className="focus-music-status">
+              {isPaused ? ' · Paused' : ' · Playing'}
+            </span>
+          )}
+        </p>
       </div>
 
-      {/* YouTube iframe — audio-first compact embed */}
-      <div className={`focus-music-player ${isPlaying ? 'focus-music-player--visible' : ''}`}>
-        {!isPlaying ? (
-          <button
-            type="button"
-            className="focus-music-play-btn"
-            onClick={handlePlay}
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M8 5.14v14l11-7-11-7z" />
-            </svg>
-            <span>Start Listening</span>
-          </button>
-        ) : (
-          <div className="focus-music-iframe-wrap">
-            <iframe
-              ref={iframeRef}
-              width="100%"
-              height="80"
-              src="https://www.youtube.com/embed/YmQ7jRgf4f0?si=wkpkdeB4mLKf0m-g&autoplay=1"
-              title="Lofi Hip Hop Radio — Focus Music"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              referrerPolicy="strict-origin-when-cross-origin"
-              allowFullScreen
-            />
-          </div>
-        )}
-      </div>
+      {/* Start button or Player */}
+      {!isPlaying ? (
+        <button
+          type="button"
+          className="focus-music-play-btn"
+          onClick={handleStart}
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8 5.14v14l11-7-11-7z" />
+          </svg>
+          <span>Start Listening</span>
+        </button>
+      ) : (
+        <>
+          {/* Custom Controls */}
+          <div className="focus-music-controls">
+            {/* Play / Pause */}
+            <button
+              type="button"
+              className="focus-music-ctrl-btn focus-music-ctrl-btn--play"
+              onClick={togglePlayPause}
+              title={isPaused ? 'Play' : 'Pause'}
+            >
+              {isPaused ? (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.14v14l11-7-11-7z" /></svg>
+              ) : (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1" /><rect x="14" y="4" width="4" height="16" rx="1" /></svg>
+              )}
+            </button>
 
-      {/* Expand to video toggle */}
-      {isPlaying && (
-        <div className="focus-music-expand">
-          <div className="focus-music-iframe-full">
-            <iframe
-              width="100%"
-              height="100%"
-              src="https://www.youtube.com/embed/YmQ7jRgf4f0?si=wkpkdeB4mLKf0m-g"
-              title="Lofi Hip Hop Radio — Focus Music (Video)"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              referrerPolicy="strict-origin-when-cross-origin"
-              allowFullScreen
-            />
+            {/* Mute toggle */}
+            <button
+              type="button"
+              className="focus-music-ctrl-btn"
+              onClick={toggleMute}
+              title={isMuted ? 'Unmute' : 'Mute'}
+            >
+              {isMuted || volume === 0 ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M11 5 6 9H2v6h4l5 4V5Z" />
+                  <line x1="22" y1="9" x2="16" y2="15" />
+                  <line x1="16" y1="9" x2="22" y2="15" />
+                </svg>
+              ) : volume < 50 ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M11 5 6 9H2v6h4l5 4V5Z" />
+                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                </svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M11 5 6 9H2v6h4l5 4V5Z" />
+                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                </svg>
+              )}
+            </button>
+
+            {/* Volume slider */}
+            <div className="focus-music-volume">
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={isMuted ? 0 : volume}
+                onChange={(e) => handleVolumeChange(Number(e.target.value))}
+                className="focus-music-volume-slider"
+                style={{
+                  background: `linear-gradient(to right, #a78bfa ${isMuted ? 0 : volume}%, rgba(255,255,255,0.1) ${isMuted ? 0 : volume}%)`,
+                }}
+              />
+              <span className="focus-music-volume-label">{isMuted ? 0 : volume}%</span>
+            </div>
           </div>
-        </div>
+
+          {/* Single YouTube player */}
+          <div className="focus-music-expand">
+            <div className="focus-music-iframe-full">
+              <div ref={playerContainerRef} />
+            </div>
+          </div>
+        </>
       )}
 
       {/* Tips card */}
