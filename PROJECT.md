@@ -68,3 +68,13 @@ A personalized interactive console built for Chennai SOC Analyst interview prepa
 - Configured repository deployment pipeline to publish updates to GitHub Pages on every push to the `main` branch.
 - Validated Vite asset bundling and resolved asset path compatibility via relative path settings (`base: './'`) in `vite.config.ts`.
 - Verified execution of the GitHub Actions workflow to successfully compile TypeScript, build production assets, and deploy the application to [https://kutral.github.io/temp/](https://kutral.github.io/temp/).
+
+### Milestone 9: Focus Music — Embedded Lofi YouTube Live Stream
+- Added a third "Focus Music" tab to the Wellness section with a distinctive purple gradient active state.
+- **Vinyl Record Visual**: Spinning vinyl disc with concentric groove rings, center label, and ambient glow that animates when music is playing.
+- **Waveform Bars**: 32 animated audio bars with staggered delay that bounce when the stream is active.
+- **Audio-First Design**: Compact YouTube iframe (80px height) for audio playback, plus an expanded 16:9 video view below for visual engagement.
+- **Info Card**: "Why Focus Music?" card with 4 benefit tiles (Reduces anxiety, Boosts focus, Masks noise, Flow state) with hover micro-animations.
+- Embedded YouTube live stream: [Lofi Hip Hop Radio](https://www.youtube.com/live/YmQ7jRgf4f0) with autoplay on user interaction.
+- Fully responsive for mobile viewports with scaled vinyl and 2-column tip grid.
+
