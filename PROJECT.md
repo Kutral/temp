@@ -63,3 +63,8 @@ A personalized interactive console built for Chennai SOC Analyst interview prepa
 - Created dedicated component ([WellnessSection.tsx](file:///c:/Users/eswar/Downloads/Kimi_Agent_SOC%20Analyst%20Interview%20Guide/app/src/pages/WellnessSection.tsx)) and stylesheet ([Wellness.css](file:///c:/Users/eswar/Downloads/Kimi_Agent_SOC%20Analyst%20Interview%20Guide/app/src/pages/Wellness.css)).
 - Integrated into existing navigation with HeartPulse icon from Lucide.
 - Verified TypeScript compilation with zero errors.
+
+### Milestone 8: Automated GitHub Pages Deployment
+- Configured repository deployment pipeline to publish updates to GitHub Pages on every push to the `main` branch.
+- Validated Vite asset bundling and resolved asset path compatibility via relative path settings (`base: './'`) in `vite.config.ts`.
+- Verified execution of the GitHub Actions workflow to successfully compile TypeScript, build production assets, and deploy the application to [https://kutral.github.io/temp/](https://kutral.github.io/temp/).
