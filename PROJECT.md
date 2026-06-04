@@ -48,4 +48,18 @@ A personalized interactive console built for Chennai SOC Analyst interview prepa
 - Built a localized domain-mastery tracking system that updates overall progress in real-time, persisting via `localStorage`.
 - Verified type correctness with zero compile or lint warnings.
 
+### Milestone 6: Resume Deep-Dive Integration
+- Analyzed the candidate's resume to generate over 50 deep technical and situational questions.
+- Grouped the questions into 5 specific domains: Networking Fundamentals, Web Application Security & Bug Bounty, Development & Secure Coding, Core Concepts & Internship Experience, and Scenario-Based (Managerial).
+- Created a new `ResumeQuestionsSection` UI with interactive accordions and premium responsive design.
+- Verified functionality across both desktop and mobile viewports via the automated browser auditor.
+- Ensured zero compile or lint warnings during integration.
 
+### Milestone 7: Focus & Breathe — Pomodoro Timer + Box Breathing Module
+- Added a new "Focus & Breathe" section with Pomodoro Timer and Box Breathing modules accessible from the sidebar/mobile nav.
+- **Pomodoro Timer**: SVG circular progress ring with minute ticks, configurable focus/break durations, session tracking, browser Notification API integration, audible chime on completion, and persistent settings via localStorage.
+- **Box Breathing**: Animated 4-phase breathing exercise (Inhale → Hold → Exhale → Hold, 4 seconds each) with a traveling dot around a box path, scaling breath orb with easeInOutCubic easing, countdown timer, cycle counter, and phase progress bar.
+- Both modules include Web Audio API sound feedback, responsive mobile layout, and dynamic page title updates during focus sessions.
+- Created dedicated component ([WellnessSection.tsx](file:///c:/Users/eswar/Downloads/Kimi_Agent_SOC%20Analyst%20Interview%20Guide/app/src/pages/WellnessSection.tsx)) and stylesheet ([Wellness.css](file:///c:/Users/eswar/Downloads/Kimi_Agent_SOC%20Analyst%20Interview%20Guide/app/src/pages/Wellness.css)).
+- Integrated into existing navigation with HeartPulse icon from Lucide.
+- Verified TypeScript compilation with zero errors.

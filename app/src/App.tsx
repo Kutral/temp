@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import WellnessSection from './pages/WellnessSection'
+import './pages/Wellness.css'
 import {
   Activity,
   AlertTriangle,
@@ -7,6 +9,8 @@ import {
   BriefcaseBusiness,
   Bug,
   CheckCircle2,
+  HeartPulse,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   CircleDot,
@@ -54,9 +58,10 @@ import {
   managerRoundStudyPlan,
   managerRoundThreatWatch,
 } from './data/managerRound'
+import { resumeQuestionsData } from './data/resumeQuestions'
 import './App.css'
 
-type SectionId = 'dashboard' | 'manager' | 'resume' | 'questions' | 'topics' | 'playbooks' | 'zoho' | 'cheatsheet'
+type SectionId = 'dashboard' | 'manager' | 'resume' | 'resumeQuestions' | 'questions' | 'topics' | 'playbooks' | 'zoho' | 'cheatsheet' | 'wellness'
 
 type TopicCategory =
   | 'Core'
@@ -103,12 +108,14 @@ type Playbook = {
 const navItems: { id: SectionId; label: string; icon: LucideIcon; helper: string }[] = [
   { id: 'dashboard', label: 'Mission brief', icon: Radar, helper: 'What to study first' },
   { id: 'manager', label: 'Manager round', icon: Brain, helper: 'Deep technical prep' },
+  { id: 'resumeQuestions', label: 'Resume Qs', icon: FileText, helper: '50+ Managerial Qs' },
   { id: 'resume', label: 'Resume story', icon: UserRound, helper: 'Your profile and proof' },
   { id: 'questions', label: 'Question bank', icon: NotebookTabs, helper: 'Practice answers' },
   { id: 'topics', label: '24 topic map', icon: Layers3, helper: 'Gemini PDF coverage' },
   { id: 'playbooks', label: 'SOC playbooks', icon: ClipboardCheck, helper: 'Scenario responses' },
   { id: 'zoho', label: 'About Zoho', icon: ServerCog, helper: 'SOC infrastructure & culture' },
   { id: 'cheatsheet', label: 'Night-before', icon: ListChecks, helper: 'Fast revision' },
+  { id: 'wellness', label: 'Focus & Breathe', icon: HeartPulse, helper: 'Pomodoro timer & box breathing' },
 ]
 
 const resumeProfile = {
@@ -1078,6 +1085,84 @@ const beginnerCheatCodes: Record<string, string> = {
     'Behavioral answer formula: honest motivation, resume proof, SOC usefulness, willingness to learn and work shifts.',
 }
 
+function ResumeQuestionsSection() {
+  const [activeCategory, setActiveCategory] = useState<string>(resumeQuestionsData[0].id)
+  const activeData = resumeQuestionsData.find((c) => c.id === activeCategory) || resumeQuestionsData[0]
+
+  return (
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6 md:p-8 relative overflow-hidden group">
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="relative">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500/20 text-indigo-400">
+              <FileText className="h-6 w-6" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-white">Resume Deep-Dive (50+ Questions)</h2>
+              <p className="text-sm text-zinc-400">Managerial and technical questions extracted directly from your resume.</p>
+            </div>
+          </div>
+          
+          <div className="flex flex-wrap gap-2 mt-6 border-b border-zinc-800 pb-4">
+            {resumeQuestionsData.map((category) => {
+              const Icon = category.icon;
+              return (
+                <button
+                  key={category.id}
+                  onClick={() => setActiveCategory(category.id)}
+                  className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
+                    activeCategory === category.id
+                      ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20'
+                      : 'bg-zinc-800/50 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  {category.title}
+                  <span className="ml-1 rounded-full bg-black/20 px-2 py-0.5 text-xs">
+                    {category.questions.length}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+
+          <div className="mt-6">
+            <h3 className="mb-2 text-lg font-semibold text-zinc-200">{activeData.title}</h3>
+            <p className="mb-6 text-sm text-zinc-400">{activeData.description}</p>
+            
+            <div className="space-y-4">
+              {activeData.questions.map((q, idx) => (
+                <details
+                  key={idx}
+                  className="group rounded-xl border border-zinc-800 bg-zinc-900/80 [&_summary::-webkit-details-marker]:hidden overflow-hidden transition-all duration-300"
+                >
+                  <summary className="flex cursor-pointer items-start justify-between gap-4 p-4 hover:bg-zinc-800/50">
+                    <div className="flex gap-4">
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-medium text-zinc-400 group-open:bg-indigo-500/20 group-open:text-indigo-400">
+                        {idx + 1}
+                      </span>
+                      <h4 className="text-sm font-medium leading-6 text-zinc-200 group-open:text-white">
+                        {q.q}
+                      </h4>
+                    </div>
+                    <span className="shrink-0 text-zinc-500 transition duration-300 group-open:-rotate-180">
+                      <ChevronDown className="h-5 w-5" />
+                    </span>
+                  </summary>
+                  <div className="border-t border-zinc-800 bg-zinc-950/50 p-4 pl-14">
+                    <p className="text-sm leading-relaxed text-zinc-400">{q.a}</p>
+                  </div>
+                </details>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const studyStorageKey = 'zoho-soc-prep-mastered-topics'
 
 function App() {
@@ -1274,6 +1359,7 @@ function App() {
               />
             )}
             {activeSection === 'manager' && <ManagerRoundSection />}
+            {activeSection === 'resumeQuestions' && <ResumeQuestionsSection />}
             {activeSection === 'resume' && <ResumeSection />}
             {activeSection === 'questions' && <QuestionsSection />}
             {activeSection === 'topics' && (
@@ -1289,6 +1375,7 @@ function App() {
             {activeSection === 'playbooks' && <PlaybooksSection />}
             {activeSection === 'zoho' && <ZohoSection />}
             {activeSection === 'cheatsheet' && <CheatSheetSection />}
+            {activeSection === 'wellness' && <WellnessSection />}
           </div>
         </main>
       </div>
