@@ -111,7 +111,7 @@ function formatTime(seconds: number): string {
 
 // ─── Main Component ─────────────────────────────────────────────────────
 export default function WellnessSection() {
-  const [activeTab, setActiveTab] = useState<'pomodoro' | 'breathing'>('pomodoro')
+  const [activeTab, setActiveTab] = useState<'pomodoro' | 'breathing' | 'music'>('pomodoro')
 
   return (
     <div className="wellness-root panel-enter">
@@ -143,11 +143,25 @@ export default function WellnessSection() {
           </svg>
           <span>Box Breathing</span>
         </button>
+        <button
+          type="button"
+          className={`wellness-tab ${activeTab === 'music' ? 'wellness-tab--active wellness-tab--music' : ''}`}
+          onClick={() => setActiveTab('music')}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 18V5l12-2v13" />
+            <circle cx="6" cy="18" r="3" />
+            <circle cx="18" cy="16" r="3" />
+          </svg>
+          <span>Focus Music</span>
+        </button>
       </div>
 
       {/* Content */}
       <div className="wellness-content">
-        {activeTab === 'pomodoro' ? <PomodoroTimer /> : <BoxBreathing />}
+        {activeTab === 'pomodoro' && <PomodoroTimer />}
+        {activeTab === 'breathing' && <BoxBreathing />}
+        {activeTab === 'music' && <FocusMusic />}
       </div>
     </div>
   )
@@ -873,6 +887,138 @@ function BoxBreathing() {
             <div className="breathing-info-step" style={{ borderColor: '#86efac22' }}>
               <span style={{ color: '#86efac' }}>4</span>
               <span>Hold 4s</span>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// FOCUS MUSIC
+// ═══════════════════════════════════════════════════════════════════════
+function FocusMusic() {
+  const [isPlaying, setIsPlaying] = useState(false)
+  const iframeRef = useRef<HTMLIFrameElement>(null)
+
+  const handlePlay = () => {
+    setIsPlaying(true)
+  }
+
+  return (
+    <div className="focus-music-container">
+      {/* Ambient background */}
+      <div className="focus-music-ambient" />
+
+      {/* Vinyl / Album art area */}
+      <div className="focus-music-visual">
+        <div className={`focus-music-vinyl ${isPlaying ? 'focus-music-vinyl--spinning' : ''}`}>
+          <div className="focus-music-vinyl-grooves" />
+          <div className="focus-music-vinyl-grooves focus-music-vinyl-grooves--2" />
+          <div className="focus-music-vinyl-grooves focus-music-vinyl-grooves--3" />
+          <div className="focus-music-vinyl-label">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 18V5l12-2v13" />
+              <circle cx="6" cy="18" r="3" />
+              <circle cx="18" cy="16" r="3" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Waveform bars */}
+        <div className={`focus-music-waveform ${isPlaying ? 'focus-music-waveform--active' : ''}`}>
+          {Array.from({ length: 32 }).map((_, i) => (
+            <div
+              key={i}
+              className="focus-music-bar"
+              style={{
+                animationDelay: `${i * 0.07}s`,
+                height: isPlaying ? undefined : '4px',
+              }}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Track info */}
+      <div className="focus-music-info">
+        <h3 className="focus-music-title">Lofi Hip Hop Radio</h3>
+        <p className="focus-music-subtitle">beats to relax/study to · 24/7 live stream</p>
+      </div>
+
+      {/* YouTube iframe — audio-first compact embed */}
+      <div className={`focus-music-player ${isPlaying ? 'focus-music-player--visible' : ''}`}>
+        {!isPlaying ? (
+          <button
+            type="button"
+            className="focus-music-play-btn"
+            onClick={handlePlay}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8 5.14v14l11-7-11-7z" />
+            </svg>
+            <span>Start Listening</span>
+          </button>
+        ) : (
+          <div className="focus-music-iframe-wrap">
+            <iframe
+              ref={iframeRef}
+              width="100%"
+              height="80"
+              src="https://www.youtube.com/embed/YmQ7jRgf4f0?si=wkpkdeB4mLKf0m-g&autoplay=1"
+              title="Lofi Hip Hop Radio — Focus Music"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Expand to video toggle */}
+      {isPlaying && (
+        <div className="focus-music-expand">
+          <div className="focus-music-iframe-full">
+            <iframe
+              width="100%"
+              height="100%"
+              src="https://www.youtube.com/embed/YmQ7jRgf4f0?si=wkpkdeB4mLKf0m-g"
+              title="Lofi Hip Hop Radio — Focus Music (Video)"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Tips card */}
+      {!isPlaying && (
+        <div className="focus-music-tips">
+          <h4 className="focus-music-tips-title">Why Focus Music?</h4>
+          <p className="focus-music-tips-text">
+            Ambient lo-fi music reduces cognitive load and keeps your brain in a flow state.
+            The repetitive, low-complexity beats mask distracting noises without demanding attention.
+          </p>
+          <div className="focus-music-tips-grid">
+            <div className="focus-music-tip">
+              <span className="focus-music-tip-icon">🧠</span>
+              <span>Reduces anxiety</span>
+            </div>
+            <div className="focus-music-tip">
+              <span className="focus-music-tip-icon">⚡</span>
+              <span>Boosts focus</span>
+            </div>
+            <div className="focus-music-tip">
+              <span className="focus-music-tip-icon">🎧</span>
+              <span>Masks noise</span>
+            </div>
+            <div className="focus-music-tip">
+              <span className="focus-music-tip-icon">🌊</span>
+              <span>Flow state</span>
             </div>
           </div>
         </div>

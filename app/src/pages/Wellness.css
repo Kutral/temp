@@ -717,4 +717,349 @@
   .breathing-info-steps {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .focus-music-visual {
+    width: 180px;
+    height: 180px;
+  }
+
+  .focus-music-vinyl {
+    width: 140px;
+    height: 140px;
+  }
+
+  .focus-music-waveform {
+    bottom: -16px;
+    gap: 3px;
+  }
+
+  .focus-music-bar {
+    width: 3px;
+  }
+
+  .focus-music-tips-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .focus-music-iframe-full {
+    height: 200px;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   FOCUS MUSIC
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Tab active override for music ───────────────────────────────────── */
+
+.wellness-tab--music.wellness-tab--active {
+  background: linear-gradient(135deg, #a78bfa, #7c3aed) !important;
+  border-color: rgba(167, 139, 250, 0.5) !important;
+  box-shadow: 0 0 24px rgba(167, 139, 250, 0.25);
+}
+
+.wellness-tab--music.wellness-tab--active:hover {
+  background: linear-gradient(135deg, #c4b5fd, #a78bfa) !important;
+}
+
+/* ─── Container ───────────────────────────────────────────────────────── */
+
+.focus-music-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  position: relative;
+}
+
+.focus-music-ambient {
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(167, 139, 250, 0.08) 0%,
+    rgba(124, 58, 237, 0.04) 40%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Vinyl Visual ────────────────────────────────────────────────────── */
+
+.focus-music-visual {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.focus-music-vinyl {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 50% 50%,
+    #1a1a2e 0%,
+    #0d0d1a 30%,
+    #111118 50%,
+    #0a0a12 70%,
+    #0d0d1a 100%
+  );
+  border: 3px solid rgba(167, 139, 250, 0.15);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 0 40px rgba(167, 139, 250, 0.08),
+    inset 0 0 30px rgba(0, 0, 0, 0.6);
+  transition: transform 0.3s ease;
+}
+
+.focus-music-vinyl--spinning {
+  animation: vinyl-spin 4s linear infinite;
+}
+
+@keyframes vinyl-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.focus-music-vinyl-grooves {
+  position: absolute;
+  inset: 15px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  pointer-events: none;
+}
+
+.focus-music-vinyl-grooves--2 {
+  inset: 30px;
+  border-color: rgba(255, 255, 255, 0.03);
+}
+
+.focus-music-vinyl-grooves--3 {
+  inset: 50px;
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+.focus-music-vinyl-label {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #a78bfa33, #7c3aed33);
+  border: 2px solid rgba(167, 139, 250, 0.3);
+  display: grid;
+  place-items: center;
+  color: #c4b5fd;
+  z-index: 1;
+}
+
+/* ─── Waveform ────────────────────────────────────────────────────────── */
+
+.focus-music-waveform {
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 40px;
+}
+
+.focus-music-bar {
+  width: 4px;
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(to top, #a78bfa66, #c4b5fd88);
+  transition: height 0.4s ease;
+}
+
+.focus-music-waveform--active .focus-music-bar {
+  animation: waveform-bounce 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes waveform-bounce {
+  0% { height: 4px; }
+  25% { height: 14px; }
+  50% { height: 28px; }
+  75% { height: 10px; }
+  100% { height: 20px; }
+}
+
+/* ─── Track Info ──────────────────────────────────────────────────────── */
+
+.focus-music-info {
+  text-align: center;
+  z-index: 1;
+  margin-top: 8px;
+}
+
+.focus-music-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin-bottom: 4px;
+}
+
+.focus-music-subtitle {
+  font-size: 13px;
+  color: rgba(167, 139, 250, 0.6);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* ─── Player / Iframe ─────────────────────────────────────────────────── */
+
+.focus-music-player {
+  width: 100%;
+  max-width: 480px;
+  z-index: 1;
+}
+
+.focus-music-play-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 16px 40px;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, #a78bfa, #7c3aed);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 250ms ease;
+  box-shadow: 0 0 30px rgba(167, 139, 250, 0.25);
+  letter-spacing: 0.02em;
+}
+
+.focus-music-play-btn:hover {
+  transform: scale(1.03);
+  box-shadow: 0 0 50px rgba(167, 139, 250, 0.35);
+  filter: brightness(1.1);
+}
+
+.focus-music-play-btn:active {
+  transform: scale(0.97);
+}
+
+.focus-music-iframe-wrap {
+  width: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(167, 139, 250, 0.15);
+  background: #000;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  animation: player-reveal 400ms ease-out;
+}
+
+@keyframes player-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.focus-music-iframe-wrap iframe {
+  display: block;
+}
+
+/* ─── Expanded Video ──────────────────────────────────────────────────── */
+
+.focus-music-expand {
+  width: 100%;
+  max-width: 560px;
+  z-index: 1;
+  animation: player-reveal 500ms ease-out;
+}
+
+.focus-music-iframe-full {
+  width: 100%;
+  height: 315px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(167, 139, 250, 0.12);
+  background: #000;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    0 0 60px rgba(167, 139, 250, 0.06);
+}
+
+.focus-music-iframe-full iframe {
+  display: block;
+}
+
+/* ─── Tips Card ───────────────────────────────────────────────────────── */
+
+.focus-music-tips {
+  width: 100%;
+  max-width: 480px;
+  padding: 24px;
+  border-radius: 16px;
+  border: 1px solid rgba(167, 139, 250, 0.08);
+  background: rgba(167, 139, 250, 0.03);
+  z-index: 1;
+}
+
+.focus-music-tips-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 8px;
+}
+
+.focus-music-tips-text {
+  font-size: 13px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 16px;
+}
+
+.focus-music-tips-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.focus-music-tip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(167, 139, 250, 0.08);
+  background: rgba(167, 139, 250, 0.04);
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  transition: all 250ms ease;
+}
+
+.focus-music-tip:hover {
+  border-color: rgba(167, 139, 250, 0.2);
+  background: rgba(167, 139, 250, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+  transform: translateY(-2px);
+}
+
+.focus-music-tip-icon {
+  font-size: 22px;
 }
