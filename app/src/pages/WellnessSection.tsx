@@ -933,6 +933,8 @@ function FocusMusic() {
   const [isPaused, setIsPaused] = useState(false)
   const [volume, setVolume] = useState(70)
   const [isMuted, setIsMuted] = useState(false)
+  const [videoUrl, setVideoUrl] = useState('')
+  const videoIdRef = useRef('YmQ7jRgf4f0') // Default Lofi Hip Hop Radio
   const playerRef = useRef<YTPlayer>(null)
   const playerContainerRef = useRef<HTMLDivElement>(null)
   const apiLoadedRef = useRef(false)
@@ -957,7 +959,7 @@ function FocusMusic() {
     if (!YT || !YT.Player || !playerContainerRef.current) return
 
     playerRef.current = new YT.Player(playerContainerRef.current, {
-      videoId: 'YmQ7jRgf4f0',
+      videoId: videoIdRef.current,
       height: '100%',
       width: '100%',
       playerVars: {
@@ -1040,6 +1042,24 @@ function FocusMusic() {
     } catch { /* player not ready */ }
   }, [isMuted, volume])
 
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value
+    setVideoUrl(url)
+    
+    // Extract video ID
+    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/)
+    if (match && match[1]) {
+      const newId = match[1]
+      videoIdRef.current = newId
+      if (playerRef.current) {
+        playerRef.current.loadVideoById(newId)
+        if (!isPlaying) {
+          setIsPlaying(true)
+        }
+      }
+    }
+  }
+
   return (
     <div className="focus-music-container">
       {/* Ambient background */}
@@ -1077,15 +1097,26 @@ function FocusMusic() {
 
       {/* Track info */}
       <div className="focus-music-info">
-        <h3 className="focus-music-title">Lofi Hip Hop Radio</h3>
+        <h3 className="focus-music-title">
+          {videoUrl ? 'Custom YouTube Audio' : 'Lofi Hip Hop Radio'}
+        </h3>
         <p className="focus-music-subtitle">
-          beats to relax/study to · 24/7 live stream
+          {videoUrl ? 'playing custom track' : 'beats to relax/study to · 24/7 live stream'}
           {isPlaying && (
             <span className="focus-music-status">
               {isPaused ? ' · Paused' : ' · Playing'}
             </span>
           )}
         </p>
+        <div className="focus-music-url-container">
+          <input 
+            type="text" 
+            placeholder="Paste YouTube URL here..." 
+            className="focus-music-url-input"
+            value={videoUrl}
+            onChange={handleUrlChange}
+          />
+        </div>
       </div>
 
       {/* Start button or Player */}

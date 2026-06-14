@@ -84,4 +84,10 @@ A personalized interactive console built for Chennai SOC Analyst interview prepa
 - **Pomodoro Stats Reset**: Added a dedicated reset action for session tracking (Focus Today, Cycle Progress, Completed Cycles) to allow clearing logs and starting fresh.
 - **GitHub Pages Deployment Verification**: Successfully pushed code changes to `main` and verified that the automatic GitHub Actions workflow built and deployed the live app to [https://kutral.github.io/temp/](https://kutral.github.io/temp/).
 
+### Milestone 11: Custom YouTube URL Playback Support
+- **Custom URL Input**: Added a text input field within the Focus Music controller to let users paste any standard YouTube or `youtu.be` URL.
+- **Dynamic ID Extraction**: Implemented regex parsing to extract YouTube Video IDs from various URL formats.
+- **Unified Control Integration**: Integrated the dynamically parsed video ID into the custom YouTube IFrame API wrapper, ensuring that custom URLs support volume controls, play/pause, and mute.
+- **Push-to-Deploy Verification**: Pushed the updates to the repository to trigger the automated GitHub Actions deployment.
+
 
