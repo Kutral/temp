@@ -1047,15 +1047,16 @@ function FocusMusic() {
     setVideoUrl(url)
     
     // Extract video ID
-    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/)
-    if (match && match[1]) {
-      const newId = match[1]
-      videoIdRef.current = newId
+    const extractedId = extractYoutubeId(url)
+    if (extractedId) {
+      videoIdRef.current = extractedId
       if (playerRef.current) {
-        playerRef.current.loadVideoById(newId)
-        if (!isPlaying) {
-          setIsPlaying(true)
-        }
+        try {
+          playerRef.current.loadVideoById(extractedId)
+          if (!isPlaying) {
+            setIsPlaying(true)
+          }
+        } catch { /* player not ready */ }
       }
     }
   }
@@ -1257,4 +1258,39 @@ function getDotY(phaseIndex: number, progress: number): number {
     case 3: return 240 - 200 * progress  // left: bottom to top
     default: return 40
   }
+}
+
+function extractYoutubeId(url: string): string | null {
+  const cleanUrl = url.trim()
+  
+  // 1. If it's already a clean 11-character ID
+  if (/^[a-zA-Z0-9_-]{11}$/.test(cleanUrl)) {
+    return cleanUrl
+  }
+  
+  // 2. Try matching patterns
+  const patterns = [
+    /youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})/,
+    /youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/,
+    /youtube\.com\/v\/([a-zA-Z0-9_-]{11})/,
+    /youtube\.com\/live\/([a-zA-Z0-9_-]{11})/,
+    /youtu\.be\/([a-zA-Z0-9_-]{11})/,
+    /youtube-nocookie\.com\/embed\/([a-zA-Z0-9_-]{11})/
+  ]
+  
+  for (const pattern of patterns) {
+    const match = cleanUrl.match(pattern)
+    if (match && match[1]) {
+      return match[1]
+    }
+  }
+  
+  // 3. Fallback: split by ? or & and look for an 11-char segment
+  const cleanPotentialId = cleanUrl.split(/[?&]/)[0]
+  const fallbackMatch = cleanPotentialId.match(/([a-zA-Z0-9_-]{11})/)
+  if (fallbackMatch && fallbackMatch[1]) {
+    return fallbackMatch[1]
+  }
+  
+  return null
 }

@@ -86,7 +86,8 @@ A personalized interactive console built for Chennai SOC Analyst interview prepa
 
 ### Milestone 11: Custom YouTube URL Playback Support
 - **Custom URL Input**: Added a text input field within the Focus Music controller to let users paste any standard YouTube or `youtu.be` URL.
-- **Dynamic ID Extraction**: Implemented regex parsing to extract YouTube Video IDs from various URL formats.
+- **Dynamic ID Extraction**: Implemented regex patterns and a robust parsing function (`extractYoutubeId`) supporting standard URLs, share links, custom embed URLs, and `/live/` streams (e.g. `youtube.com/live/VIDEO_ID`).
+- **Robust Fallback Parsing**: Added query-parameter stripping and a fallback search pattern to extract 11-character alphanumeric strings, allowing users to paste a video ID with parameters directly (e.g. `tRsQsTMvPNg?si=...`).
 - **Unified Control Integration**: Integrated the dynamically parsed video ID into the custom YouTube IFrame API wrapper, ensuring that custom URLs support volume controls, play/pause, and mute.
 - **Push-to-Deploy Verification**: Pushed the updates to the repository to trigger the automated GitHub Actions deployment.
 
